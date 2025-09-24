@@ -198,31 +198,13 @@ const testimonials = [
                     Explore Packages
                     <ArrowRight class="ml-2 h-5 w-5" />
                 </a>
-                <a href="#" class="inline-flex items-center border-2 border-gray-200 hover:border-orange-500 px-8 py-4 rounded-full font-semibold transition-all duration-300">
+                <a href="/contact" class="inline-flex items-center border-2 border-gray-200 hover:border-orange-500 px-8 py-4 rounded-full font-semibold transition-all duration-300">
                     <Play class="mr-2 h-5 w-5" />
-                    Watch Demo
+                    Book a Consultation
                 </a>
             </div>
 
             <div class="flex items-center space-x-8 pt-8">
-              <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
-                  <Zap class="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <div class="font-semibold text-gray-900">Smart Recommendations</div>
-                  <div class="text-sm text-gray-600">AI-powered system design</div>
-                </div>
-              </div>
-              <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-900 to-blue-800 rounded-full flex items-center justify-center">
-                  <Globe class="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <div class="font-semibold text-gray-900">Global Reach</div>
-                  <div class="text-sm text-gray-600">50+ countries served</div>
-                </div>
-              </div>
             </div>
           </div>
 
