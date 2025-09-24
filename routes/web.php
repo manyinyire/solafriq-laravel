@@ -177,6 +177,12 @@ Route::middleware([
             return Inertia::render('Admin/Users');
         })->name('admin.users');
 
+        Route::get('/users-data', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.data');
+        Route::get('/users/{user}', [App\Http\Controllers\Admin\UserController::class, 'show'])->name('admin.users.show');
+        Route::put('/users/{user}', [App\Http\Controllers\Admin\UserController::class, 'update'])->name('admin.users.update');
+        Route::delete('/users/{user}', [App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
+        Route::post('/users/bulk', [App\Http\Controllers\Admin\UserController::class, 'bulkAction'])->name('admin.users.bulk');
+
         Route::get('/systems', function () {
             return Inertia::render('Admin/SolarSystems');
         })->name('admin.systems');

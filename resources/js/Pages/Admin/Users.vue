@@ -60,7 +60,7 @@ const loadUsers = async (page = 1) => {
       ...Object.fromEntries(Object.entries(filters.value).filter(([_, v]) => v))
     })
 
-    const response = await fetch(`/api/v1/admin/users?${params}`, {
+    const response = await fetch(`/admin/users-data?${params}`, {
       headers: {
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
@@ -106,7 +106,7 @@ const clearFilters = () => {
 
 const viewUser = async (userId) => {
   try {
-    const response = await fetch(`/api/v1/admin/users/${userId}`, {
+    const response = await fetch(`/admin/users/${userId}`, {
       headers: {
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
@@ -149,7 +149,7 @@ const bulkAction = async (action) => {
   try {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     
-    const response = await fetch('/api/v1/admin/users/bulk', {
+    const response = await fetch('/admin/users/bulk', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -182,7 +182,7 @@ const updateUserStatus = async (user, status) => {
   try {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     
-    const response = await fetch(`/api/v1/admin/users/${user.id}`, {
+    const response = await fetch(`/admin/users/${user.id}`, {
       method: 'PUT',
       headers: {
         'Accept': 'application/json',
@@ -211,7 +211,7 @@ const deleteUser = async (user) => {
   try {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     
-    const response = await fetch(`/api/v1/admin/users/${user.id}`, {
+    const response = await fetch(`/admin/users/${user.id}`, {
       method: 'DELETE',
       headers: {
         'Accept': 'application/json',
