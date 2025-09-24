@@ -107,9 +107,7 @@ Route::middleware([
 
     Route::get('/orders-data', [\App\Http\Controllers\Api\V1\OrderController::class, 'index'])->name('client.orders.data');
 
-    Route::get('/orders/{order}', function ($order) {
-        return Inertia::render('Client/OrderDetails', ['orderId' => $order]);
-    })->name('client.orders.show');
+    Route::get('/orders/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('client.orders.show');
 
     Route::get('/invoices', function () {
         return Inertia::render('Client/Invoices');

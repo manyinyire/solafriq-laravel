@@ -119,7 +119,7 @@ class OrderController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $order->load(['items', 'user', 'invoice', 'warranties']);
+        $order->load(['items.solarSystem', 'user', 'invoice', 'warranties']);
 
         return response()->json([
             'success' => true,
