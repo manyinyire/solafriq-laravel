@@ -3029,3 +3029,27 @@ into your web browser: <span class="break-all" style="box-sizing: border-box; fo
 #58 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\PRO\\\\Do...')
 #59 {main}
 "} 
+[2025-09-24 12:53:14] local.ERROR: syntax error, unexpected identifier "Schema", expecting "function" {"exception":"[object] (ParseError(code: 0): syntax error, unexpected identifier \"Schema\", expecting \"function\" at C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\database\\migrations\\2025_09_24_125114_add_gift_details_to_orders_table.php:12)
+[stacktrace]
+#0 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\Filesystem.php(149): Illuminate\\Filesystem\\Filesystem::Illuminate\\Filesystem\\{closure}()
+#1 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(595): Illuminate\\Filesystem\\Filesystem->requireOnce('C:\\\\Users\\\\PRO\\\\Do...')
+#2 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(130): Illuminate\\Database\\Migrations\\Migrator->requireFiles(Array)
+#3 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(116): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#4 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(666): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#5 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(109): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#6 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(88): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->runMigrations()
+#7 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#8 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(43): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#9 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(96): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#10 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#11 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(836): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#12 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#13 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\symfony\\console\\Command\\Command.php(318): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#14 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(180): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#15 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\symfony\\console\\Application.php(1110): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#16 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\symfony\\console\\Application.php(359): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#17 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\symfony\\console\\Application.php(194): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#18 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(197): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#19 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#20 {main}
+"} 

@@ -21,12 +21,19 @@ class CheckoutController extends Controller
         }
 
         $cartItems = $cart->items()->with('solarSystem')->get();
+        $user = Auth::user();
 
         return Inertia::render('Checkout/Index', [
             'cart' => $cart,
             'cartItems' => $cartItems,
             'total' => $cart->total,
             'itemCount' => $cart->item_count,
+            'customer' => $user ? [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'address' => $user->address,
+            ] : null,
         ]);
     }
 
@@ -39,6 +46,11 @@ class CheckoutController extends Controller
             'customer_address' => 'required|string|max:1000',
             'payment_method' => 'required|in:card,installment,cash_on_delivery',
             'total' => 'required|numeric|min:0',
+            'is_gift' => 'boolean',
+            'recipient_name' => 'required_if:is_gift,true|string|max:255',
+            'recipient_email' => 'required_if:is_gift,true|email|max:255',
+            'recipient_phone' => 'required_if:is_gift,true|string|max:20',
+            'recipient_address' => 'required_if:is_gift,true|string|max:1000',
         ]);
 
         $cart = $this->getCart();
@@ -62,6 +74,11 @@ class CheckoutController extends Controller
                 'payment_status' => $this->getPaymentStatus($request->payment_method),
                 'payment_method' => strtoupper($request->payment_method),
                 'tracking_number' => $this->generateTrackingNumber(),
+                'is_gift' => $request->is_gift,
+                'recipient_name' => $request->recipient_name,
+                'recipient_email' => $request->recipient_email,
+                'recipient_phone' => $request->recipient_phone,
+                'recipient_address' => $request->recipient_address,
             ]);
 
             // Create order items

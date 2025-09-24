@@ -9,18 +9,24 @@ const props = defineProps({
   cartItems: Array,
   total: Number,
   itemCount: Number,
+  customer: Object,
 });
 
 const form = ref({
-  customer_name: '',
-  customer_email: '',
-  customer_phone: '',
-  customer_address: '',
+  customer_name: props.customer?.name || '',
+  customer_email: props.customer?.email || '',
+  customer_phone: props.customer?.phone || '',
+  customer_address: props.customer?.address || '',
   payment_method: 'card',
   card_number: '',
   card_expiry: '',
   card_cvc: '',
   cardholder_name: '',
+  is_gift: false,
+  recipient_name: '',
+  recipient_email: '',
+  recipient_phone: '',
+  recipient_address: '',
 });
 
 const processing = ref(false);
@@ -104,6 +110,23 @@ const validateForm = () => {
 
   if (!form.value.customer_address.trim()) {
     newErrors.customer_address = 'Address is required';
+  }
+
+  if (form.value.is_gift) {
+    if (!form.value.recipient_name.trim()) {
+      newErrors.recipient_name = 'Recipient\'s name is required';
+    }
+    if (!form.value.recipient_email.trim()) {
+      newErrors.recipient_email = 'Recipient\'s email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.recipient_email)) {
+      newErrors.recipient_email = 'Please enter a valid email address';
+    }
+    if (!form.value.recipient_phone.trim()) {
+      newErrors.recipient_phone = 'Recipient\'s phone number is required';
+    }
+    if (!form.value.recipient_address.trim()) {
+      newErrors.recipient_address = 'Recipient\'s address is required';
+    }
   }
 
   if (form.value.payment_method === 'card') {
@@ -223,6 +246,74 @@ const goBack = () => {
                     :class="{ 'border-red-500': errors.customer_address }"
                   ></textarea>
                   <p v-if="errors.customer_address" class="text-red-500 text-sm mt-1">{{ errors.customer_address }}</p>
+                </div>
+              </div>
+
+              <div class="mt-6">
+                <label class="flex items-center">
+                  <input type="checkbox" v-model="form.is_gift" class="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+                  <span class="ml-2 text-sm text-gray-900">Is this a gift for someone else?</span>
+                </label>
+              </div>
+
+              <div v-if="form.is_gift" class="mt-6 border-t pt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Recipient's Details</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Recipient's Full Name *
+                    </label>
+                    <input
+                      v-model="form.recipient_name"
+                      type="text"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      placeholder="Enter recipient's full name"
+                      :class="{ 'border-red-500': errors.recipient_name }"
+                    />
+                    <p v-if="errors.recipient_name" class="text-red-500 text-sm mt-1">{{ errors.recipient_name }}</p>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Recipient's Email Address *
+                    </label>
+                    <input
+                      v-model="form.recipient_email"
+                      type="email"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      placeholder="Enter recipient's email"
+                      :class="{ 'border-red-500': errors.recipient_email }"
+                    />
+                    <p v-if="errors.recipient_email" class="text-red-500 text-sm mt-1">{{ errors.recipient_email }}</p>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Recipient's Phone Number *
+                    </label>
+                    <input
+                      v-model="form.recipient_phone"
+                      type="tel"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      placeholder="Enter recipient's phone number"
+                      :class="{ 'border-red-500': errors.recipient_phone }"
+                    />
+                    <p v-if="errors.recipient_phone" class="text-red-500 text-sm mt-1">{{ errors.recipient_phone }}</p>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Recipient's Address *
+                    </label>
+                    <textarea
+                      v-model="form.recipient_address"
+                      rows="3"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      placeholder="Enter recipient's complete address"
+                      :class="{ 'border-red-500': errors.recipient_address }"
+                    ></textarea>
+                    <p v-if="errors.recipient_address" class="text-red-500 text-sm mt-1">{{ errors.recipient_address }}</p>
+                  </div>
                 </div>
               </div>
             </div>
