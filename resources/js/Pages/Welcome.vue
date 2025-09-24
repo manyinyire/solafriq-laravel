@@ -41,41 +41,6 @@ const props = defineProps({
   solarSystems: Array
 });
 
-// Mission Section Data
-const mission = {
-  title: "Empowering Zimbabweans with Sustainable Solar Energy",
-  description: "Solafriq aims to provide affordable and sustainable solar energy solutions to Zimbabweans working on cruise ships, empowering them to power their homes and improve their livelihoods."
-};
-
-// Power Section Data
-const powerOptions = [
-    {
-      icon: Lightbulb,
-      title: "Lighting",
-      description: "Power all your indoor and outdoor lighting without interruption, even during grid outages.",
-      gradient: "from-yellow-500 to-orange-500",
-    },
-    {
-      icon: Monitor,
-      title: "Electronics",
-      description: "Keep your TVs, computers, and other electronics running smoothly with clean, stable power.",
-      gradient: "from-blue-500 to-blue-600",
-    },
-    {
-      icon: Home,
-      title: "Appliances",
-      description: "Run refrigerators, washing machines, and other essential home appliances without worry.",
-      gradient: "from-green-500 to-emerald-500",
-    },
-    {
-      icon: Building2,
-      title: "Small Business",
-      description:
-        "Power small offices, shops, or restaurants with our larger capacity systems designed for commercial use.",
-      gradient: "from-purple-500 to-purple-600",
-    },
-  ];
-
 // Modern Solutions Section Data
 const loading = ref(false);
 const activeFilter = ref("all");
@@ -287,59 +252,6 @@ const testimonials = [
 
             <div class="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-full opacity-20 animate-bounce"></div>
             <div class="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full opacity-20 animate-pulse"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Mission Section -->
-    <section class="py-24 bg-gradient-to-br from-blue-50 to-orange-50">
-      <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto text-center">
-          <div class="inline-flex items-center px-6 py-3 bg-white rounded-full text-gray-700 text-sm font-medium shadow-lg mb-8">
-            Our Mission
-          </div>
-          <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-8 leading-tight">
-            {{ mission.title }}
-            <span class="block bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
-              Sustainable Solar Energy
-            </span>
-          </h2>
-          <p class="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
-            {{ mission.description }}
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Power Section -->
-    <section class="py-24 bg-white">
-      <div class="container mx-auto px-4">
-        <div class="text-center space-y-4 mb-20">
-          <div class="inline-flex items-center px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm font-medium">
-            Power Solutions
-          </div>
-          <h2 class="text-4xl lg:text-5xl font-bold text-gray-900">
-            What Can Our Solar Systems
-            <span class="block bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
-              Power?
-            </span>
-          </h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-            Our solar solutions are designed to power everything from basic home appliances to entire businesses,
-            ensuring you have reliable energy for all your needs.
-          </p>
-        </div>
-
-        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div v-for="(option, index) in powerOptions" :key="index" class="group border-0 bg-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 rounded-2xl overflow-hidden">
-            <div class="p-8 text-center">
-              <div :class="['w-16 h-16 bg-gradient-to-br rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300', option.gradient]">
-                <component :is="option.icon" class="h-8 w-8 text-white" />
-              </div>
-              <h3 class="text-xl font-bold text-gray-900 mb-4">{{ option.title }}</h3>
-              <p class="text-gray-600 leading-relaxed">{{ option.description }}</p>
-            </div>
           </div>
         </div>
       </div>
