@@ -13,36 +13,13 @@ import {
   Search
 } from 'lucide-vue-next'
 
-const loading = ref(true)
-const systems = ref([])
+const props = defineProps({
+  systems: Array,
+});
+
+const loading = ref(false)
 const searchQuery = ref('')
 
-onMounted(async () => {
-  await loadSystems()
-})
-
-const loadSystems = async () => {
-  loading.value = true
-  try {
-    const response = await fetch('/api/v1/solar-systems', {
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-      },
-      credentials: 'same-origin'
-    })
-
-    const data = await response.json()
-    if (data.success) {
-      systems.value = data.data
-    }
-  } catch (error) {
-    console.error('Failed to load solar systems:', error)
-  } finally {
-    loading.value = false
-  }
-}
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('en-US', {
@@ -52,8 +29,8 @@ const formatCurrency = (value) => {
 }
 
 const filteredSystems = computed(() => {
-  if (!searchQuery.value) return systems.value
-  return systems.value.filter(system =>
+  if (!searchQuery.value) return props.systems
+  return props.systems.filter(system =>
     system.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     system.description.toLowerCase().includes(searchQuery.value.toLowerCase())
   )

@@ -183,9 +183,7 @@ Route::middleware([
         Route::delete('/users/{user}', [App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
         Route::post('/users/bulk', [App\Http\Controllers\Admin\UserController::class, 'bulkAction'])->name('admin.users.bulk');
 
-        Route::get('/systems', function () {
-            return Inertia::render('Admin/SolarSystems');
-        })->name('admin.systems');
+        Route::get('/systems', [App\Http\Controllers\Admin\SolarSystemController::class, 'index'])->name('admin.systems');
 
         Route::get('/orders', function () {
             return Inertia::render('Admin/Orders');
