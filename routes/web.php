@@ -133,6 +133,8 @@ Route::middleware([
 
     Route::put('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
+    Route::get('/profile/verify-email-change/{token}', [App\Http\Controllers\ProfileController::class, 'verifyEmailChange'])->name('profile.verifyEmailChange')->middleware('signed');
+
     // Installment Plans
     Route::apiResource('installment-plans', \App\Http\Controllers\Api\V1\InstallmentPlanController::class);
     Route::post('installment-plans/{installmentPlan}/payments/{payment}/pay', [\App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'processPayment']);

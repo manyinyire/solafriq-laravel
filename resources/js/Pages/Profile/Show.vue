@@ -2,6 +2,9 @@
   <ClientLayout>
     <div class="max-w-2xl mx-auto">
       <h1 class="text-3xl font-bold mb-6">My Profile</h1>
+      <div v-if="$page.props.flash.status" class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+        <span class="block sm:inline">{{ $page.props.flash.status }}</span>
+      </div>
       <div class="bg-white shadow-md rounded-lg p-6">
         <form @submit.prevent="updateProfile">
           <div class="space-y-6">
@@ -12,6 +15,10 @@
             <div>
               <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
               <input type="email" id="email" v-model="form.email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
+            </div>
+            <div>
+              <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+              <input type="text" id="phone_number" v-model="form.phone_number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
             </div>
             <div>
               <label for="password" class="block text-sm font-medium text-gray-700">New Password</label>
@@ -42,6 +49,7 @@ const page = usePage();
 const form = useForm({
   name: page.props.auth.user.name,
   email: page.props.auth.user.email,
+  phone_number: page.props.auth.user.phone_number,
   password: '',
   password_confirmation: '',
 });
