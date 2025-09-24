@@ -27,10 +27,8 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'My Orders', href: '/orders', icon: ShoppingCart },
   { name: 'Invoices', href: '/invoices', icon: FileText },
-  { name: 'Solar Systems', href: '/systems', icon: Zap },
   { name: 'Installments', href: '/installments', icon: CreditCard },
   { name: 'Warranties', href: '/warranties', icon: Shield },
-  { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Support', href: '/support', icon: Wrench },
   { name: 'Profile', href: '/profile', icon: Settings },
 ]
