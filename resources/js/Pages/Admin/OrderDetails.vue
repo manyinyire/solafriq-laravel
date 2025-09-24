@@ -45,6 +45,38 @@ const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
+
+const isUpdating = ref(false);
+
+const updateStatus = async (status) => {
+  isUpdating.value = true;
+  try {
+    await axios.put(`/admin/orders/${props.orderId}/status`, { status });
+    fetchOrder(); // Refresh order details
+  } catch (err) {
+    console.error('Failed to update order status:', err);
+    alert('Failed to update order status. Please try again.');
+  } finally {
+    isUpdating.value = false;
+  }
+};
+
+const downloadInvoice = async () => {
+  try {
+    const response = await axios.get(`/admin/orders/${props.orderId}/invoice-pdf`, {
+      responseType: 'blob',
+    });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `invoice-order-${props.orderId}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+  } catch (err) {
+    console.error('Failed to download invoice:', err);
+    alert('Failed to download invoice. Please try again.');
+  }
+};
 </script>
 
 <template>
@@ -195,10 +227,18 @@ const formatDate = (dateString) => {
 
               <div class="border-t pt-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Actions</h3>
-                <!-- Add admin actions here, e.g., update status, etc. -->
                 <div class="flex flex-col space-y-3">
-                    <button class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">Update Status</button>
-                    <button class="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300">Download Invoice</button>
+                  <div class="relative">
+                    <select @change="updateStatus($event.target.value)" :disabled="isUpdating" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 appearance-none">
+                      <option value="" disabled selected>Change Status</option>
+                      <option value="PENDING">Pending</option>
+                      <option value="PROCESSING">Processing</option>
+                      <option value="SHIPPED">Shipped</option>
+                      <option value="DELIVERED">Delivered</option>
+                      <option value="CANCELLED">Cancelled</option>
+                    </select>
+                  </div>
+                  <button @click="downloadInvoice" :disabled="isUpdating" class="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300">Download Invoice</button>
                 </div>
               </div>
             </div>
