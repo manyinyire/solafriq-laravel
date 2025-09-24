@@ -1,0 +1,493 @@
+<script setup>
+import { ref, computed } from 'vue';
+import MainLayout from '@/Layouts/MainLayout.vue';
+import { router } from '@inertiajs/vue3';
+import { CreditCard, Truck, Shield, CheckCircle, ArrowLeft, Lock, User, Mail, Phone, MapPin, Zap, AlertCircle, DollarSign } from 'lucide-vue-next';
+
+const props = defineProps({
+  cart: Object,
+  cartItems: Array,
+  total: Number,
+  itemCount: Number,
+});
+
+const form = ref({
+  customer_name: '',
+  customer_email: '',
+  customer_phone: '',
+  customer_address: '',
+  payment_method: 'card',
+  card_number: '',
+  card_expiry: '',
+  card_cvc: '',
+  cardholder_name: '',
+});
+
+const processing = ref(false);
+const errors = ref({});
+
+const subtotal = computed(() => {
+  return props.cartItems?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
+});
+
+const tax = computed(() => {
+  return subtotal.value * 0.05;
+});
+
+const shipping = computed(() => {
+  return subtotal.value > 5000 ? 0 : 250;
+});
+
+const finalTotal = computed(() => {
+  return subtotal.value + tax.value + shipping.value;
+});
+
+const submitOrder = () => {
+  console.log('Place Order button clicked');
+  console.log('Form data:', form.value);
+  console.log('Final total:', finalTotal.value);
+
+  if (!validateForm()) {
+    console.log('Form validation failed');
+    return;
+  }
+
+  console.log('Form validation passed, submitting order...');
+  processing.value = true;
+  errors.value = {};
+
+  const orderData = {
+    ...form.value,
+    total: finalTotal.value,
+  };
+
+  console.log('Sending order data:', orderData);
+
+  router.post('/checkout/process', orderData, {
+    preserveState: true,
+    onStart: () => {
+      console.log('Request started');
+    },
+    onSuccess: (response) => {
+      console.log('Order success:', response);
+      processing.value = false;
+    },
+    onError: (responseErrors) => {
+      console.log('Order error:', responseErrors);
+      processing.value = false;
+      errors.value = responseErrors;
+    },
+    onFinish: () => {
+      console.log('Request finished');
+      processing.value = false;
+    }
+  });
+};
+
+const validateForm = () => {
+  console.log('Validating form...');
+  const newErrors = {};
+
+  if (!form.value.customer_name.trim()) {
+    newErrors.customer_name = 'Name is required';
+  }
+
+  if (!form.value.customer_email.trim()) {
+    newErrors.customer_email = 'Email is required';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.customer_email)) {
+    newErrors.customer_email = 'Please enter a valid email address';
+  }
+
+  if (!form.value.customer_phone.trim()) {
+    newErrors.customer_phone = 'Phone number is required';
+  }
+
+  if (!form.value.customer_address.trim()) {
+    newErrors.customer_address = 'Address is required';
+  }
+
+  if (form.value.payment_method === 'card') {
+    if (!form.value.card_number.trim()) {
+      newErrors.card_number = 'Card number is required';
+    }
+    if (!form.value.card_expiry.trim()) {
+      newErrors.card_expiry = 'Expiry date is required';
+    }
+    if (!form.value.card_cvc.trim()) {
+      newErrors.card_cvc = 'CVC is required';
+    }
+    if (!form.value.cardholder_name.trim()) {
+      newErrors.cardholder_name = 'Cardholder name is required';
+    }
+  }
+
+  console.log('Validation errors:', newErrors);
+  errors.value = newErrors;
+  const isValid = Object.keys(newErrors).length === 0;
+  console.log('Form is valid:', isValid);
+  return isValid;
+};
+
+const goBack = () => {
+  router.visit('/cart');
+};
+</script>
+
+<template>
+  <MainLayout>
+    <div class="min-h-screen bg-gray-50 py-8">
+      <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                <CreditCard class="w-8 h-8 mr-3 text-orange-500" />
+                Checkout
+              </h1>
+              <p class="text-gray-600 mt-2">
+                Complete your order for {{ itemCount }} item{{ itemCount !== 1 ? 's' : '' }}
+              </p>
+            </div>
+            <button @click="goBack"
+                    class="flex items-center text-orange-600 hover:text-orange-700 font-medium">
+              <ArrowLeft class="w-4 h-4 mr-2" />
+              Back to Cart
+            </button>
+          </div>
+        </div>
+
+        <!-- Checkout Form -->
+        <div class="grid lg:grid-cols-3 gap-8">
+          <!-- Form Section -->
+          <div class="lg:col-span-2 space-y-8">
+            <!-- Customer Information -->
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+              <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <User class="w-5 h-5 mr-2 text-orange-500" />
+                Customer Information
+              </h2>
+
+              <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name *
+                  </label>
+                  <input
+                    v-model="form.customer_name"
+                    type="text"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter your full name"
+                    :class="{ 'border-red-500': errors.customer_name }"
+                  />
+                  <p v-if="errors.customer_name" class="text-red-500 text-sm mt-1">{{ errors.customer_name }}</p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    v-model="form.customer_email"
+                    type="email"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter your email"
+                    :class="{ 'border-red-500': errors.customer_email }"
+                  />
+                  <p v-if="errors.customer_email" class="text-red-500 text-sm mt-1">{{ errors.customer_email }}</p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    v-model="form.customer_phone"
+                    type="tel"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter your phone number"
+                    :class="{ 'border-red-500': errors.customer_phone }"
+                  />
+                  <p v-if="errors.customer_phone" class="text-red-500 text-sm mt-1">{{ errors.customer_phone }}</p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Address *
+                  </label>
+                  <textarea
+                    v-model="form.customer_address"
+                    rows="3"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter your complete address"
+                    :class="{ 'border-red-500': errors.customer_address }"
+                  ></textarea>
+                  <p v-if="errors.customer_address" class="text-red-500 text-sm mt-1">{{ errors.customer_address }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+              <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <CreditCard class="w-5 h-5 mr-2 text-orange-500" />
+                Payment Information
+              </h2>
+
+              <!-- Payment Method Selection -->
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                  Payment Method
+                </label>
+                <div class="grid grid-cols-3 gap-4">
+                  <label class="relative cursor-pointer">
+                    <input
+                      v-model="form.payment_method"
+                      type="radio"
+                      value="card"
+                      class="sr-only"
+                    />
+                    <div :class="[
+                      'border-2 rounded-lg p-4 text-center transition-all duration-200',
+                      form.payment_method === 'card'
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-gray-300 hover:border-gray-400'
+                    ]">
+                      <CreditCard class="w-6 h-6 mx-auto mb-2" />
+                      <span class="font-medium text-sm">Credit Card</span>
+                    </div>
+                  </label>
+
+                  <label class="relative cursor-pointer">
+                    <input
+                      v-model="form.payment_method"
+                      type="radio"
+                      value="installment"
+                      class="sr-only"
+                    />
+                    <div :class="[
+                      'border-2 rounded-lg p-4 text-center transition-all duration-200',
+                      form.payment_method === 'installment'
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-gray-300 hover:border-gray-400'
+                    ]">
+                      <Truck class="w-6 h-6 mx-auto mb-2" />
+                      <span class="font-medium text-sm">Installment Plan</span>
+                    </div>
+                  </label>
+
+                  <label class="relative cursor-pointer">
+                    <input
+                      v-model="form.payment_method"
+                      type="radio"
+                      value="cash_on_delivery"
+                      class="sr-only"
+                    />
+                    <div :class="[
+                      'border-2 rounded-lg p-4 text-center transition-all duration-200',
+                      form.payment_method === 'cash_on_delivery'
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-gray-300 hover:border-gray-400'
+                    ]">
+                      <DollarSign class="w-6 h-6 mx-auto mb-2" />
+                      <span class="font-medium text-sm">Cash on Delivery</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Credit Card Form -->
+              <div v-if="form.payment_method === 'card'" class="space-y-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Card Number *
+                  </label>
+                  <input
+                    v-model="form.card_number"
+                    type="text"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="1234 5678 9012 3456"
+                    :class="{ 'border-red-500': errors.card_number }"
+                  />
+                  <p v-if="errors.card_number" class="text-red-500 text-sm mt-1">{{ errors.card_number }}</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Expiry Date *
+                    </label>
+                    <input
+                      v-model="form.card_expiry"
+                      type="text"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      placeholder="MM/YY"
+                      :class="{ 'border-red-500': errors.card_expiry }"
+                    />
+                    <p v-if="errors.card_expiry" class="text-red-500 text-sm mt-1">{{ errors.card_expiry }}</p>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      CVC *
+                    </label>
+                    <input
+                      v-model="form.card_cvc"
+                      type="text"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      placeholder="123"
+                      :class="{ 'border-red-500': errors.card_cvc }"
+                    />
+                    <p v-if="errors.card_cvc" class="text-red-500 text-sm mt-1">{{ errors.card_cvc }}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Cardholder Name *
+                  </label>
+                  <input
+                    v-model="form.cardholder_name"
+                    type="text"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Name as it appears on card"
+                    :class="{ 'border-red-500': errors.cardholder_name }"
+                  />
+                  <p v-if="errors.cardholder_name" class="text-red-500 text-sm mt-1">{{ errors.cardholder_name }}</p>
+                </div>
+              </div>
+
+              <!-- Installment Plan Info -->
+              <div v-else-if="form.payment_method === 'installment'" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-start space-x-3">
+                  <AlertCircle class="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 class="font-medium text-blue-900 mb-2">Installment Plan Available</h4>
+                    <p class="text-blue-700 text-sm">
+                      Pay in monthly installments starting at $150/month. Our team will contact you after order confirmation to set up your payment plan.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cash on Delivery Info -->
+              <div v-else-if="form.payment_method === 'cash_on_delivery'" class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-start space-x-3">
+                  <DollarSign class="w-5 h-5 text-green-600 mt-0.5" />
+                  <div>
+                    <h4 class="font-medium text-green-900 mb-2">Cash on Delivery</h4>
+                    <p class="text-green-700 text-sm mb-3">
+                      Pay with cash when your solar system is delivered and installed. No upfront payment required.
+                    </p>
+                    <div class="bg-green-100 rounded-md p-3">
+                      <h5 class="font-medium text-green-900 text-sm mb-2">What to expect:</h5>
+                      <ul class="text-green-700 text-sm space-y-1">
+                        <li>• Our team will contact you to schedule delivery</li>
+                        <li>• Professional installation included</li>
+                        <li>• Pay the full amount upon completion</li>
+                        <li>• Cash, bank transfer, or mobile money accepted</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow-sm border p-6 sticky top-8">
+              <h2 class="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+
+              <!-- Order Items -->
+              <div class="space-y-4 mb-6">
+                <div v-for="item in cartItems" :key="item.id" class="flex items-center space-x-3">
+                  <div
+                    class="w-12 h-12 bg-gradient-to-br rounded-lg flex items-center justify-center flex-shrink-0"
+                    :style="{ background: item.solar_system.gradient_colors || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }"
+                  >
+                    <Zap class="w-4 h-4 text-white opacity-80" />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-medium text-gray-900 text-sm truncate">{{ item.solar_system.name }}</h4>
+                    <p class="text-gray-600 text-xs">Qty: {{ item.quantity }}</p>
+                  </div>
+                  <span class="font-medium text-gray-900 text-sm">
+                    ${{ (item.price * item.quantity).toLocaleString() }}
+                  </span>
+                </div>
+              </div>
+
+              <hr class="border-gray-200 mb-4" />
+
+              <!-- Price Breakdown -->
+              <div class="space-y-3 mb-6">
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Subtotal</span>
+                  <span class="font-medium">${{ subtotal.toLocaleString() }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Tax (5%)</span>
+                  <span class="font-medium">${{ tax.toFixed(2) }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Shipping</span>
+                  <span class="font-medium">
+                    <span v-if="shipping === 0" class="text-green-600">Free</span>
+                    <span v-else>${{ shipping.toLocaleString() }}</span>
+                  </span>
+                </div>
+                <hr class="border-gray-200" />
+                <div class="flex justify-between font-bold">
+                  <span>Total</span>
+                  <span class="text-gray-900">${{ finalTotal.toLocaleString() }}</span>
+                </div>
+              </div>
+
+              <!-- Security Notice -->
+              <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-6">
+                <div class="flex items-center space-x-2">
+                  <Lock class="w-4 h-4 text-green-600" />
+                  <span class="text-sm text-green-700 font-medium">Secure 256-bit SSL encryption</span>
+                </div>
+              </div>
+
+              <!-- Place Order Button -->
+              <button @click="submitOrder"
+                      :disabled="processing"
+                      class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none disabled:cursor-not-allowed">
+                <span v-if="processing">Processing Order...</span>
+                <span v-else class="flex items-center justify-center">
+                  <CheckCircle class="w-5 h-5 mr-2" />
+                  Place Order
+                </span>
+              </button>
+
+              <!-- Trust Badges -->
+              <div class="grid grid-cols-3 gap-2 mt-6 text-center">
+                <div class="text-center">
+                  <Shield class="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                  <span class="text-xs text-gray-600">Secure</span>
+                </div>
+                <div class="text-center">
+                  <Truck class="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                  <span class="text-xs text-gray-600">Fast Shipping</span>
+                </div>
+                <div class="text-center">
+                  <CheckCircle class="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                  <span class="text-xs text-gray-600">Guaranteed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </MainLayout>
+</template>
+
+<style scoped>
+.sticky {
+  position: sticky;
+}
+</style>
