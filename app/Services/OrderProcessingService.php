@@ -188,7 +188,7 @@ class OrderProcessingService
     {
         match ($newStatus) {
             'ACCEPTED' => $this->handleAcceptedStatus($order),
-            'SCHEDULED' => $this->handleScheduledStatus($order),
+            'SCHEDULED' => $this->emailService->sendShippingNotification($order),
             'INSTALLED' => $this->handleInstalledStatus($order),
             'RETURNED' => $this->handleReturnedStatus($order),
             default => null,

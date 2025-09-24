@@ -4070,3 +4070,5 @@ into your web browser: <span class="break-all" style="box-sizing: border-box; fo
 #59 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\public\\index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
 #60 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\PRO\\\\Do...')
 #61 {main}"} 
+[2025-09-24 13:35:19] local.INFO: Status update email sent {"order_id":1,"old_status":"PENDING","new_status":"ACCEPTED"} 
+[2025-09-24 13:35:19] local.INFO: Order status updated {"order_id":1,"old_status":"PENDING","new_status":"ACCEPTED"} 

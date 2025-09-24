@@ -218,7 +218,7 @@ class OrderController extends Controller
         $this->authorize('update', $order);
 
         try {
-            $order = $this->orderService->updateOrderStatus($order, 'ACCEPTED');
+            $order = $this->orderService->updateOrderStatus($order, 'PROCESSING');
 
             return response()->json([
                 'success' => true,

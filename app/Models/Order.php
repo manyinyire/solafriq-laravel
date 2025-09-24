@@ -32,6 +32,7 @@ class Order extends Model
         'recipient_email',
         'recipient_phone',
         'recipient_address',
+        'installation_date',
     ];
 
     /**
