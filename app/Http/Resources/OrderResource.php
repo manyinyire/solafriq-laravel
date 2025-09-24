@@ -45,11 +45,16 @@ class OrderResource extends JsonResource
             'subtotal' => $this->when($this->relationLoaded('items'), (float) $this->subtotal),
             
             // Related data
-            'user' => $this->whenLoaded('user', fn() => [
-                'id' => $this->user->id,
-                'name' => $this->user->name,
-                'email' => $this->user->email,
-            ]),
+            'user' => $this->whenLoaded('user', function () {
+                if ($this->user) {
+                    return [
+                        'id' => $this->user->id,
+                        'name' => $this->user->name,
+                        'email' => $this->user->email,
+                    ];
+                }
+                return null;
+            }),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
             'invoice' => new InvoiceResource($this->whenLoaded('invoice')),
             'invoice_id' => $this->whenLoaded('invoice', fn() => $this->invoice->id),

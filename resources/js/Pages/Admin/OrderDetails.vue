@@ -131,9 +131,9 @@ const formatDate = (dateString) => {
                   </h2>
                 </div>
                 <div class="p-6">
-                  <p class="font-semibold">{{ order.user.name }}</p>
-                  <p>{{ order.user.email }}</p>
-                  <p>{{ order.user.phone }}</p>
+                  <p class="font-semibold">{{ order.user ? order.user.name : order.customer_name }}</p>
+                  <p>{{ order.user ? order.user.email : order.customer_email }}</p>
+                  <p>{{ order.user ? order.user.phone : order.customer_phone }}</p>
                 </div>
               </div>
 
