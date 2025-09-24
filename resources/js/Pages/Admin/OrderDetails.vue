@@ -52,7 +52,11 @@ const installationDate = ref('');
 const updateStatus = async (status) => {
   isUpdating.value = true;
   try {
-    await axios.put(`/admin/orders/${props.orderId}/status`, { status });
+    if (status === 'PROCESSING') {
+      await axios.put(`/admin/orders/${props.orderId}/accept`);
+    } else {
+      await axios.put(`/admin/orders/${props.orderId}/status`, { status });
+    }
     fetchOrder(); // Refresh order details
   } catch (err) {
     console.error('Failed to update order status:', err);
