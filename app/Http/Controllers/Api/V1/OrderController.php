@@ -277,6 +277,29 @@ class OrderController extends Controller
         }
     }
 
+    public function scheduleInstallation(Request $request, Order $order): JsonResponse
+    {
+        $this->authorize('update', $order);
+
+        $validated = $request->validate([
+            'installation_date' => 'required|date',
+        ]);
+
+        try {
+            $order = $this->orderService->scheduleInstallation($order, $validated['installation_date']);
+
+            return response()->json([
+                'data' => new OrderResource($order),
+                'message' => 'Installation scheduled successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to schedule installation',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function updateStatus(Request $request, Order $order): JsonResponse
     {
         $this->authorize('update', $order);

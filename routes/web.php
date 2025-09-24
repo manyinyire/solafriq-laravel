@@ -202,6 +202,7 @@ Route::middleware([
 
         Route::put('/orders/{order}/confirm-payment', [\App\Http\Controllers\Api\V1\OrderController::class, 'confirmPayment'])->name('admin.orders.confirm-payment');
         Route::put('/orders/{order}/status', [\App\Http\Controllers\Api\V1\OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
+        Route::put('/orders/{order}/schedule-installation', [\App\Http\Controllers\Api\V1\OrderController::class, 'scheduleInstallation'])->name('admin.orders.schedule-installation');
         Route::put('/orders/{order}/tracking', [\App\Http\Controllers\Api\V1\OrderController::class, 'updateTracking'])->name('admin.orders.update-tracking');
         Route::post('/orders/{order}/notes', [\App\Http\Controllers\Api\V1\OrderController::class, 'addNote'])->name('admin.orders.add-note');
         Route::post('/orders/{order}/refund', [\App\Http\Controllers\Api\V1\OrderController::class, 'refund'])->name('admin.orders.refund');

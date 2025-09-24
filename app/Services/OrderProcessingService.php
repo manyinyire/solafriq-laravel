@@ -388,6 +388,25 @@ class OrderProcessingService
         });
     }
 
+    public function scheduleInstallation(Order $order, string $installationDate): Order
+    {
+        return DB::transaction(function () use ($order, $installationDate) {
+            $order->update([
+                'status' => 'SCHEDULED',
+                'installation_date' => $installationDate,
+            ]);
+
+            $this->handleStatusChange($order, 'PROCESSING', 'SCHEDULED');
+
+            Log::info('Installation scheduled', [
+                'order_id' => $order->id,
+                'installation_date' => $installationDate,
+            ]);
+
+            return $order;
+        });
+    }
+
     /**
      * Process refund for an order.
      */

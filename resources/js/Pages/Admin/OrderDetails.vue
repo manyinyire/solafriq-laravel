@@ -47,6 +47,7 @@ const formatDate = (dateString) => {
 };
 
 const isUpdating = ref(false);
+const installationDate = ref('');
 
 const updateStatus = async (status) => {
   isUpdating.value = true;
@@ -56,6 +57,38 @@ const updateStatus = async (status) => {
   } catch (err) {
     console.error('Failed to update order status:', err);
     alert('Failed to update order status. Please try again.');
+  } finally {
+    isUpdating.value = false;
+  }
+};
+
+const confirmPayment = async () => {
+  isUpdating.value = true;
+  try {
+    // For simplicity, we'll use a generic payment confirmation
+    await axios.put(`/admin/orders/${props.orderId}/confirm-payment`, {
+      payment_method: 'BANK_TRANSFER',
+      transaction_reference: `ADMIN_CONF_${Date.now()}`,
+    });
+    fetchOrder();
+  } catch (err) {
+    console.error('Failed to confirm payment:', err);
+    alert('Failed to confirm payment. Please try again.');
+  } finally {
+    isUpdating.value = false;
+  }
+};
+
+const scheduleInstallation = async () => {
+  isUpdating.value = true;
+  try {
+    await axios.put(`/admin/orders/${props.orderId}/schedule-installation`, {
+      installation_date: installationDate.value,
+    });
+    fetchOrder();
+  } catch (err) {
+    console.error('Failed to schedule installation:', err);
+    alert('Failed to schedule installation. Please try again.');
   } finally {
     isUpdating.value = false;
   }
@@ -228,16 +261,30 @@ const downloadInvoice = async () => {
               <div class="border-t pt-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Actions</h3>
                 <div class="flex flex-col space-y-3">
-                  <div class="relative">
-                    <select @change="updateStatus($event.target.value)" :disabled="isUpdating" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 appearance-none">
-                      <option value="" disabled selected>Change Status</option>
-                      <option value="PENDING">Pending</option>
-                      <option value="PROCESSING">Processing</option>
-                      <option value="SHIPPED">Shipped</option>
-                      <option value="DELIVERED">Delivered</option>
-                      <option value="CANCELLED">Cancelled</option>
-                    </select>
+                  <!-- Step 1: Approve/Decline -->
+                  <div v-if="order.status === 'PENDING'" class="flex space-x-2">
+                    <button @click="updateStatus('PROCESSING')" :disabled="isUpdating" class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600">Approve</button>
+                    <button @click="updateStatus('CANCELLED')" :disabled="isUpdating" class="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600">Decline</button>
                   </div>
+
+                  <!-- Step 2: Confirm Payment -->
+                  <div v-if="order.status === 'PROCESSING' && order.payment_status === 'PENDING'">
+                    <button @click="confirmPayment" :disabled="isUpdating" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">Confirm Payment</button>
+                  </div>
+
+                  <!-- Step 3: Schedule Installation -->
+                  <div v-if="order.status === 'PROCESSING' && order.payment_status === 'PAID'">
+                    <div class="flex flex-col space-y-2">
+                      <input type="datetime-local" v-model="installationDate" class="w-full border-gray-300 rounded-lg">
+                      <button @click="scheduleInstallation" :disabled="isUpdating || !installationDate" class="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600">Schedule Installation</button>
+                    </div>
+                  </div>
+
+                  <!-- Step 4: Mark as Installed -->
+                  <div v-if="order.status === 'SCHEDULED'">
+                    <button @click="updateStatus('INSTALLED')" :disabled="isUpdating" class="w-full bg-teal-500 text-white py-2 px-4 rounded-lg hover:bg-teal-600">Mark as Installed</button>
+                  </div>
+
                   <button @click="downloadInvoice" :disabled="isUpdating" class="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300">Download Invoice</button>
                 </div>
               </div>
