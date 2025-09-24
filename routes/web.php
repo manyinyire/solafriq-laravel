@@ -127,6 +127,12 @@ Route::middleware([
         return Inertia::render('Client/Warranties');
     })->name('client.warranties');
 
+    Route::get('/profile', function () {
+        return Inertia::render('Profile/Show');
+    })->name('profile.show');
+
+    Route::put('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+
     // Installment Plans
     Route::apiResource('installment-plans', \App\Http\Controllers\Api\V1\InstallmentPlanController::class);
     Route::post('installment-plans/{installmentPlan}/payments/{payment}/pay', [\App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'processPayment']);
