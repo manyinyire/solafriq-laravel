@@ -27,6 +27,11 @@ class Order extends Model
         'customer_email',
         'customer_phone',
         'customer_address',
+        'is_gift',
+        'recipient_name',
+        'recipient_email',
+        'recipient_phone',
+        'recipient_address',
     ];
 
     /**

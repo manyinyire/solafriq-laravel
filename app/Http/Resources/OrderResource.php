@@ -28,6 +28,13 @@ class OrderResource extends JsonResource
             'customer_email' => $this->customer_email,
             'customer_phone' => $this->customer_phone,
             'customer_address' => $this->customer_address,
+
+            // Gift information
+            'is_gift' => (bool) $this->is_gift,
+            'recipient_name' => $this->recipient_name,
+            'recipient_email' => $this->recipient_email,
+            'recipient_phone' => $this->recipient_phone,
+            'recipient_address' => $this->recipient_address,
             
             // Status flags
             'is_paid' => $this->isPaid(),
