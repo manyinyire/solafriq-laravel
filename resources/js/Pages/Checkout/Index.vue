@@ -201,7 +201,8 @@ const goBack = () => {
                     type="text"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     placeholder="Enter your full name"
-                    :class="{ 'border-red-500': errors.customer_name }"
+                    :class="{ 'border-red-500': errors.customer_name, 'bg-gray-100': !!customer }"
+                    :disabled="!!customer"
                   />
                   <p v-if="errors.customer_name" class="text-red-500 text-sm mt-1">{{ errors.customer_name }}</p>
                 </div>
@@ -215,7 +216,8 @@ const goBack = () => {
                     type="email"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     placeholder="Enter your email"
-                    :class="{ 'border-red-500': errors.customer_email }"
+                    :class="{ 'border-red-500': errors.customer_email, 'bg-gray-100': !!customer }"
+                    :disabled="!!customer"
                   />
                   <p v-if="errors.customer_email" class="text-red-500 text-sm mt-1">{{ errors.customer_email }}</p>
                 </div>
@@ -229,7 +231,8 @@ const goBack = () => {
                     type="tel"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     placeholder="Enter your phone number"
-                    :class="{ 'border-red-500': errors.customer_phone }"
+                    :class="{ 'border-red-500': errors.customer_phone, 'bg-gray-100': !!customer }"
+                    :disabled="!!customer"
                   />
                   <p v-if="errors.customer_phone" class="text-red-500 text-sm mt-1">{{ errors.customer_phone }}</p>
                 </div>
@@ -243,7 +246,8 @@ const goBack = () => {
                     rows="3"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     placeholder="Enter your complete address"
-                    :class="{ 'border-red-500': errors.customer_address }"
+                    :class="{ 'border-red-500': errors.customer_address, 'bg-gray-100': !!customer }"
+                    :disabled="!!customer"
                   ></textarea>
                   <p v-if="errors.customer_address" class="text-red-500 text-sm mt-1">{{ errors.customer_address }}</p>
                 </div>
