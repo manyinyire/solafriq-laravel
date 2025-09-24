@@ -42,6 +42,14 @@ class OrderItem extends Model
     }
 
     /**
+     * Get the solar system associated with the order item.
+     */
+    public function solarSystem(): BelongsTo
+    {
+        return $this->belongsTo(SolarSystem::class);
+    }
+
+    /**
      * Calculate total price for this item.
      */
     public function getTotalPriceAttribute(): float
