@@ -15,15 +15,25 @@ class OrderUpdated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(
-        public Order $order,
-        public array $changes = []
-    ) {}
+    public $order;
 
-    public function broadcastOn(): array
+    /**
+     * Create a new event instance.
+     *
+     * @return void
+     */
+    public function __construct(Order $order)
     {
-        return [
-            new PrivateChannel('channel-name'),
-        ];
+        $this->order = $order;
+    }
+
+    /**
+     * Get the channels the event should broadcast on.
+     *
+     * @return \Illuminate\Broadcasting\Channel|array
+     */
+    public function broadcastOn()
+    {
+        return new PrivateChannel('orders.'.$this->order->id);
     }
 }
