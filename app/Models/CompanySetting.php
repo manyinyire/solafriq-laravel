@@ -205,7 +205,7 @@ class CompanySetting extends Model
                 'is_public' => true,
             ],
             'company_logo' => [
-                'value' => '/images/solafriq-logo.png',
+                'value' => '/images/solafriq-logo.svg',
                 'type' => 'file',
                 'description' => 'Company logo image',
                 'is_public' => true,

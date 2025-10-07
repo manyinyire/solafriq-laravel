@@ -61,7 +61,7 @@ const logout = () => {
       <div class="fixed inset-0 bg-gray-900/80" @click="sidebarOpen = false"></div>
       <div class="fixed inset-y-0 left-0 z-50 w-72 bg-white px-6 pb-4 overflow-y-auto">
         <div class="flex h-16 items-center justify-between">
-          <img class="h-8 w-auto" :src="companySettings.company_logo || '/images/solafriq-logo.png'" :alt="companySettings.company_name || 'SolaFriq'" />
+          <img class="h-8 w-auto" :src="companySettings.company_logo || '/images/solafriq-logo.svg'" :alt="companySettings.company_name || 'SolaFriq'" />
           <button @click="sidebarOpen = false" class="rounded-md text-gray-700 hover:text-gray-900">
             <X class="h-6 w-6" />
           </button>
@@ -94,7 +94,7 @@ const logout = () => {
     <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
       <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4 border-r border-gray-200">
         <div class="flex h-16 shrink-0 items-center">
-          <img class="h-8 w-auto" :src="companySettings.company_logo || '/images/solafriq-logo.png'" :alt="companySettings.company_name || 'SolaFriq'" />
+          <img class="h-8 w-auto" :src="companySettings.company_logo || '/images/solafriq-logo.svg'" :alt="companySettings.company_name || 'SolaFriq'" />
           <span class="ml-3 text-xl font-bold text-gray-900">Admin</span>
         </div>
         <nav class="flex flex-1 flex-col">
