@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, reactive } from 'vue'
-import { Head, router, alert } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import {
   Zap,
