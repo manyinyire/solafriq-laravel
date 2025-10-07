@@ -68,14 +68,16 @@ class CompanySettingsController extends Controller
                     $file = $request->file('company_logo');
 
                     // Delete old logo if it exists
-                    $oldLogo = CompanySetting::get('company_logo');
-                    if ($oldLogo && !str_contains($oldLogo, '/images/solafriq-logo.png')) {
-                        $oldPath = str_replace('/storage/', '', $oldLogo);
-                        Storage::disk('public')->delete($oldPath);
+                    $oldLogo = CompanySetting::where('key', 'company_logo')->first();
+                    if ($oldLogo && $oldLogo->value && !str_contains($oldLogo->value, '/images/solafriq-logo.png')) {
+                        $oldPath = str_replace('/storage/', '', $oldLogo->value);
+                        if (Storage::disk('public')->exists($oldPath)) {
+                            Storage::disk('public')->delete($oldPath);
+                        }
                     }
 
                     $setting = CompanySetting::set($key, $file, 'file', true, 'Company logo image');
-                    $updated[$key] = $setting->value;
+                    $updated[$key] = CompanySetting::castValue($setting->value, $setting->type);
                 } elseif ($key !== 'company_logo') {
                     // Handle other settings
                     $type = $this->getSettingType($key);
@@ -87,10 +89,12 @@ class CompanySettingsController extends Controller
                 }
             }
 
-            // Clear all cached company settings
+            // Clear ALL caches
+            Cache::flush();
+            
+            // Also specifically clear company settings caches
             Cache::forget('company_settings_public');
             Cache::forget('company_settings_all');
-            // Also clear individual setting caches
             foreach ($request->all() as $key => $value) {
                 Cache::forget("company_setting_{$key}");
             }

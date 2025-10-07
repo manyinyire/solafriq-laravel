@@ -153,12 +153,20 @@ class CompanySetting extends Model
                 return (float) $value;
             case 'file':
                 if ($value) {
-                    // If it's already a full URL/path (starts with / or http), return as is
-                    if (str_starts_with($value, '/') || str_starts_with($value, 'http')) {
+                    // If it's already a full URL (starts with http), return as is
+                    if (str_starts_with($value, 'http')) {
+                        return $value;
+                    }
+                    // If it starts with /storage/, return as is
+                    if (str_starts_with($value, '/storage/')) {
+                        return $value;
+                    }
+                    // If it starts with /, it's a public path, return as is
+                    if (str_starts_with($value, '/')) {
                         return $value;
                     }
                     // Otherwise, it's a storage path, so add storage URL
-                    return Storage::url($value);
+                    return '/storage/' . $value;
                 }
                 return null;
             default:
