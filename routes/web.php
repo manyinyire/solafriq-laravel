@@ -161,16 +161,17 @@ Route::middleware([
         Route::get('/installment-plans', [\App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'adminIndex']);
         Route::put('/installment-plans/{installmentPlan}', [\App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'update']);
 
-        // Company Settings APIs
-        Route::get('/settings', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'index']);
-        Route::put('/settings', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'update']);
-        Route::post('/settings/reset', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'resetToDefaults']);
-        Route::get('/settings/export', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'export']);
-        Route::post('/settings/import', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'import']);
-
+        // Company Settings Page
         Route::get('/settings', function () {
             return Inertia::render('Admin/CompanySettings');
         })->name('admin.settings');
+        
+        // Company Settings APIs
+        Route::get('/settings/data', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'index'])->name('admin.settings.data');
+        Route::put('/settings/data', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'update'])->name('admin.settings.update');
+        Route::post('/settings/reset', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'resetToDefaults'])->name('admin.settings.reset');
+        Route::get('/settings/export', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'export'])->name('admin.settings.export');
+        Route::post('/settings/import', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'import'])->name('admin.settings.import');
 
         Route::get('/users', function () {
             return Inertia::render('Admin/Users');

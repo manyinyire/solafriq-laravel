@@ -50,7 +50,7 @@ onMounted(async () => {
 const loadSettings = async () => {
   loading.value = true
   try {
-    const response = await fetch('/admin/settings', {
+    const response = await fetch('/admin/settings/data', {
       headers: {
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
@@ -118,7 +118,7 @@ const saveSettings = async () => {
     // Get CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     
-    const response = await fetch('/admin/settings', {
+    const response = await fetch('/admin/settings/data', {
       method: 'PUT',
       headers: {
         'Accept': 'application/json',
