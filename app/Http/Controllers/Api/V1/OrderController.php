@@ -460,12 +460,12 @@ class OrderController extends Controller
                 return response()->json(['error' => 'PDF generation library not available'], 500);
             }
 
-            // Get company settings (you can customize these or fetch from database)
+            // Get company settings from database
             $companySettings = [
-                'companyName' => 'SolarFriq',
-                'companyAddress' => '123 Solar Street, Energy City, EC 12345',
-                'companyPhone' => '+1 (555) 123-4567',
-                'companyEmail' => 'info@solarfriq.com'
+                'companyName' => \App\Models\CompanySetting::get('company_name', 'SolarFriq'),
+                'companyAddress' => \App\Models\CompanySetting::get('company_address', '123 Solar Street, Energy City, EC 12345'),
+                'companyPhone' => \App\Models\CompanySetting::get('company_phone', '+1 (555) 123-4567'),
+                'companyEmail' => \App\Models\CompanySetting::get('company_email', 'info@solarfriq.com')
             ];
 
             // Prepare view data
