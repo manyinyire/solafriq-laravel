@@ -1,184 +1,191 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice #{{ $invoice->invoice_number }}</title>
+    <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 11px;
             color: #333;
+            line-height: 1.4;
             margin: 0;
             padding: 20px;
         }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 3px solid #1f2937;
-            padding-bottom: 20px;
-        }
-        .company-info h1 {
+        h1 {
             color: #1f2937;
+            font-size: 22px;
+            margin: 0 0 5px 0;
+        }
+        h2 {
+            color: #1f2937;
+            font-size: 18px;
             margin: 0;
-            font-size: 28px;
         }
-        .company-info p {
-            margin: 5px 0;
-            color: #666;
+        h3 {
+            color: #1f2937;
+            font-size: 13px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 4px;
+            margin: 0 0 8px 0;
         }
-        .invoice-info {
-            text-align: right;
+        h4 {
+            color: #1f2937;
+            font-size: 12px;
+            margin: 0 0 8px 0;
+        }
+        p {
+            margin: 2px 0;
+        }
+        .header-table {
+            width: 100%;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #1f2937;
+        }
+        .header-table td {
+            padding-bottom: 10px;
+            vertical-align: top;
+        }
+        .company-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1f2937;
         }
         .invoice-number {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
             color: #1f2937;
-            margin: 0;
         }
-        .payment-status {
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-weight: bold;
-            margin-top: 10px;
+        .payment-badge {
             display: inline-block;
+            padding: 5px 10px;
+            font-weight: bold;
+            border: 2px solid;
+            margin-top: 8px;
         }
-        .payment-status.paid {
+        .paid {
             background-color: #d1fae5;
             color: #065f46;
+            border-color: #065f46;
         }
-        .payment-status.unpaid {
+        .unpaid {
             background-color: #fee2e2;
             color: #991b1b;
+            border-color: #991b1b;
         }
-        .billing-info {
-            display: flex;
-            justify-content: space-between;
-            margin: 30px 0;
+        .info-table {
+            width: 100%;
+            margin: 15px 0;
         }
-        .billing-section {
-            width: 48%;
-        }
-        .billing-section h3 {
-            color: #1f2937;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 5px;
-            margin-bottom: 15px;
+        .info-table td {
+            width: 50%;
+            vertical-align: top;
+            padding-right: 15px;
         }
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 30px 0;
-        }
-        .items-table th,
-        .items-table td {
-            border: 1px solid #e5e7eb;
-            padding: 12px;
-            text-align: left;
+            margin: 15px 0;
         }
         .items-table th {
-            background-color: #f9fafb;
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 8px;
+            text-align: left;
             font-weight: bold;
-            color: #1f2937;
         }
-        .items-table .text-right {
+        .items-table td {
+            border: 1px solid #d1d5db;
+            padding: 8px;
+        }
+        .text-right {
             text-align: right;
         }
-        .totals {
-            margin-top: 30px;
-            text-align: right;
+        .totals-table {
+            width: 280px;
+            float: right;
+            margin: 15px 0;
         }
-        .totals table {
-            margin-left: auto;
-            border-collapse: collapse;
+        .totals-table td {
+            padding: 5px 8px;
         }
-        .totals td {
-            padding: 8px 15px;
-            border: none;
-        }
-        .totals .total-label {
+        .total-row {
+            border-top: 2px solid #1f2937;
             font-weight: bold;
-            color: #1f2937;
+            font-size: 13px;
         }
-        .totals .total-amount {
-            font-weight: bold;
-            color: #1f2937;
-            font-size: 18px;
-        }
-        .footer {
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-        }
-        .notes {
-            margin-top: 30px;
-            padding: 15px;
+        .notes-box {
+            clear: both;
+            margin-top: 15px;
+            padding: 10px;
             background-color: #f9fafb;
             border-left: 4px solid #1f2937;
         }
-        .notes h4 {
-            margin-top: 0;
-            color: #1f2937;
+        .footer {
+            margin-top: 30px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <div class="header">
-        <div class="company-info">
-            <h1>{{ $companyName ?? 'SolarFriq' }}</h1>
-            <p>{{ $companyAddress ?? 'Solar Energy Solutions' }}</p>
-            <p>{{ $companyPhone ?? 'Phone: +1 (555) 123-4567' }}</p>
-            <p>{{ $companyEmail ?? 'Email: info@solarfriq.com' }}</p>
-        </div>
-        <div class="invoice-info">
-            <h2 class="invoice-number">{{ $invoice->invoice_number }}</h2>
-            <p><strong>Date:</strong> {{ $invoice->created_at->format('F d, Y') }}</p>
-            <p><strong>Due Date:</strong> {{ $invoice->created_at->addDays(30)->format('F d, Y') }}</p>
+    <table class="header-table" cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="width: 60%;">
+                <div class="company-name">{{ $companyName ?? 'SolarFriq' }}</div>
+                <p style="color: #666;">{{ $companyAddress ?? 'Solar Energy Solutions' }}</p>
+                <p style="color: #666;">{{ $companyPhone ?? 'Phone: +1 (555) 123-4567' }}</p>
+                <p style="color: #666;">{{ $companyEmail ?? 'Email: info@solarfriq.com' }}</p>
+            </td>
+            <td style="width: 40%; text-align: right;">
+                <div class="invoice-number">{{ $invoice->invoice_number }}</div>
+                <p><strong>Date:</strong> {{ $invoice->created_at->format('M d, Y') }}</p>
+                <p><strong>Due:</strong> {{ $invoice->created_at->addDays(30)->format('M d, Y') }}</p>
+                <div class="payment-badge {{ $invoice->payment_status === 'PAID' ? 'paid' : 'unpaid' }}">
+                    {{ $invoice->payment_status === 'PAID' ? 'PAID' : 'UNPAID' }}
+                </div>
+            </td>
+        </tr>
+    </table>
 
-            <div class="payment-status {{ $invoice->payment_status === 'PAID' ? 'paid' : 'unpaid' }}">
-                {{ $invoice->payment_status === 'PAID' ? 'PAID' : 'UNPAID' }}
-            </div>
-        </div>
-    </div>
-
-    <!-- Billing Information -->
-    <div class="billing-info">
-        <div class="billing-section">
-            <h3>Bill To:</h3>
-            <p><strong>{{ $order->customer_name }}</strong></p>
-            <p>{{ $order->customer_email }}</p>
-            @if($order->customer_phone)
+    <!-- Billing Info -->
+    <table class="info-table" cellpadding="0" cellspacing="0">
+        <tr>
+            <td>
+                <h3>Bill To</h3>
+                <p><strong>{{ $order->customer_name }}</strong></p>
+                <p>{{ $order->customer_email }}</p>
+                @if($order->customer_phone)
                 <p>{{ $order->customer_phone }}</p>
-            @endif
-            @if($order->customer_address)
+                @endif
+                @if($order->customer_address)
                 <p>{{ $order->customer_address }}</p>
-            @endif
-        </div>
-        <div class="billing-section">
-            <h3>Order Details:</h3>
-            <p><strong>Order #:</strong> {{ $order->id }}</p>
-            <p><strong>Order Date:</strong> {{ $order->created_at->format('F d, Y') }}</p>
-            <p><strong>Status:</strong> {{ $order->status }}</p>
-            @if($order->tracking_number)
+                @endif
+            </td>
+            <td>
+                <h3>Order Details</h3>
+                <p><strong>Order #:</strong> {{ $order->id }}</p>
+                <p><strong>Date:</strong> {{ $order->created_at->format('M d, Y') }}</p>
+                <p><strong>Status:</strong> {{ $order->status }}</p>
+                @if($order->tracking_number)
                 <p><strong>Tracking:</strong> {{ $order->tracking_number }}</p>
-            @endif
-        </div>
-    </div>
+                @endif
+            </td>
+        </tr>
+    </table>
 
-    <!-- Items Table -->
-    <table class="items-table">
+    <!-- Items -->
+    <table class="items-table" cellpadding="0" cellspacing="0">
         <thead>
             <tr>
-                <th>Description</th>
-                <th class="text-right">Quantity</th>
-                <th class="text-right">Unit Price</th>
-                <th class="text-right">Total</th>
+                <th style="width: 50%;">Description</th>
+                <th class="text-right" style="width: 15%;">Qty</th>
+                <th class="text-right" style="width: 17%;">Unit Price</th>
+                <th class="text-right" style="width: 18%;">Total</th>
             </tr>
         </thead>
         <tbody>
@@ -187,10 +194,10 @@
                 <td>
                     <strong>{{ $item->name }}</strong>
                     @if($item->description)
-                        <br><small>{{ $item->description }}</small>
+                    <br><span style="font-size: 10px;">{{ $item->description }}</span>
                     @endif
                     @if($item->type)
-                        <br><small><em>Type: {{ ucwords(str_replace('_', ' ', $item->type)) }}</em></small>
+                    <br><span style="font-size: 10px; font-style: italic;">{{ ucwords(str_replace('_', ' ', $item->type)) }}</span>
                     @endif
                 </td>
                 <td class="text-right">{{ $item->quantity }}</td>
@@ -202,48 +209,46 @@
     </table>
 
     <!-- Totals -->
-    <div class="totals">
-        <table>
-            <tr>
-                <td class="total-label">Subtotal:</td>
-                <td class="text-right">${{ number_format($invoice->subtotal, 2) }}</td>
-            </tr>
-            @if($invoice->tax > 0)
-            <tr>
-                <td class="total-label">Tax:</td>
-                <td class="text-right">${{ number_format($invoice->tax, 2) }}</td>
-            </tr>
-            @endif
-            <tr style="border-top: 2px solid #1f2937;">
-                <td class="total-label total-amount">Total:</td>
-                <td class="text-right total-amount">${{ number_format($invoice->total, 2) }}</td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- Payment Information -->
-    @if($invoice->payment_status === 'PAID')
-    <div class="notes">
-        <h4>Payment Information</h4>
-        <p><strong>Payment Status:</strong> Paid in Full</p>
-        @if($order->payment_method)
-            <p><strong>Payment Method:</strong> {{ ucwords(str_replace('_', ' ', $order->payment_method)) }}</p>
+    <table class="totals-table" cellpadding="0" cellspacing="0">
+        <tr>
+            <td><strong>Subtotal:</strong></td>
+            <td class="text-right">${{ number_format($invoice->subtotal, 2) }}</td>
+        </tr>
+        @if($invoice->tax > 0)
+        <tr>
+            <td><strong>Tax:</strong></td>
+            <td class="text-right">${{ number_format($invoice->tax, 2) }}</td>
+        </tr>
         @endif
-        <p><strong>Payment Date:</strong> {{ $invoice->updated_at->format('F d, Y') }}</p>
+        <tr class="total-row">
+            <td><strong>TOTAL:</strong></td>
+            <td class="text-right">${{ number_format($invoice->total, 2) }}</td>
+        </tr>
+    </table>
+
+    <!-- Payment Info -->
+    @if($invoice->payment_status === 'PAID')
+    <div class="notes-box">
+        <h4>Payment Information</h4>
+        <p><strong>Status:</strong> Paid in Full</p>
+        @if($order->payment_method)
+        <p><strong>Method:</strong> {{ ucwords(str_replace('_', ' ', $order->payment_method)) }}</p>
+        @endif
+        <p><strong>Date:</strong> {{ $invoice->updated_at->format('M d, Y') }}</p>
     </div>
     @else
-    <div class="notes">
+    <div class="notes-box">
         <h4>Payment Instructions</h4>
-        <p>Payment is due within 30 days of the invoice date. Please include the invoice number {{ $invoice->invoice_number }} with your payment.</p>
+        <p>Payment is due within 30 days. Please include invoice number {{ $invoice->invoice_number }} with your payment.</p>
         @if($order->payment_method)
-            <p><strong>Preferred Payment Method:</strong> {{ ucwords(str_replace('_', ' ', $order->payment_method)) }}</p>
+        <p><strong>Preferred Method:</strong> {{ ucwords(str_replace('_', ' ', $order->payment_method)) }}</p>
         @endif
     </div>
     @endif
 
-    <!-- Order Notes -->
+    <!-- Notes -->
     @if($order->notes)
-    <div class="notes">
+    <div class="notes-box">
         <h4>Order Notes</h4>
         <p>{{ $order->notes }}</p>
     </div>
@@ -251,8 +256,8 @@
 
     <!-- Footer -->
     <div class="footer">
-        <p>Thank you for choosing {{ $companyName ?? 'SolarFriq' }} for your solar energy needs!</p>
-        <p>For questions about this invoice, please contact us at {{ $companyEmail ?? 'info@solarfriq.com' }}</p>
+        <p><strong>Thank you for choosing {{ $companyName ?? 'SolarFriq' }}!</strong></p>
+        <p>Questions? Contact us at {{ $companyEmail ?? 'info@solarfriq.com' }}</p>
     </div>
 </body>
 </html>
