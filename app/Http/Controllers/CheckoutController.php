@@ -47,10 +47,10 @@ class CheckoutController extends Controller
             'payment_method' => 'required|in:card,installment,cash_on_delivery',
             'total' => 'required|numeric|min:0',
             'is_gift' => 'boolean',
-            'recipient_name' => 'required_if:is_gift,true|string|max:255',
-            'recipient_email' => 'required_if:is_gift,true|email|max:255',
-            'recipient_phone' => 'required_if:is_gift,true|string|max:20',
-            'recipient_address' => 'required_if:is_gift,true|string|max:1000',
+            'recipient_name' => 'nullable|required_if:is_gift,true|string|max:255',
+            'recipient_email' => 'nullable|required_if:is_gift,true|email|max:255',
+            'recipient_phone' => 'nullable|required_if:is_gift,true|string|max:20',
+            'recipient_address' => 'nullable|required_if:is_gift,true|string|max:1000',
         ]);
 
         $cart = $this->getCart();
