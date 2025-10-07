@@ -103,9 +103,12 @@ const saveSettings = async () => {
   try {
     const formDataObj = new FormData()
 
+    // Add method spoofing for Laravel
+    formDataObj.append('_method', 'PUT')
+
     // Add all form fields
     Object.keys(formData.value).forEach(key => {
-      if (key !== 'company_logo' && formData.value[key] !== '') {
+      if (key !== 'company_logo' && formData.value[key] !== null && formData.value[key] !== '') {
         formDataObj.append(key, formData.value[key])
       }
     })
@@ -119,7 +122,7 @@ const saveSettings = async () => {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     
     const response = await fetch('/admin/settings/data', {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
