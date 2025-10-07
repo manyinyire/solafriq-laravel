@@ -50,7 +50,7 @@ onMounted(async () => {
 const loadSettings = async () => {
   loading.value = true
   try {
-    const response = await fetch('/api/v1/admin/settings', {
+    const response = await fetch('/admin/settings', {
       headers: {
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
@@ -118,7 +118,7 @@ const saveSettings = async () => {
     // Get CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     
-    const response = await fetch('/api/v1/admin/settings', {
+    const response = await fetch('/admin/settings', {
       method: 'PUT',
       headers: {
         'Accept': 'application/json',
@@ -159,7 +159,7 @@ const resetToDefaults = async () => {
     // Get CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     
-    const response = await fetch('/api/v1/admin/settings/reset', {
+    const response = await fetch('/admin/settings/reset', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -186,7 +186,7 @@ const resetToDefaults = async () => {
 
 const exportSettings = async () => {
   try {
-    const response = await fetch('/api/v1/admin/settings/export', {
+    const response = await fetch('/admin/settings/export', {
       headers: {
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
