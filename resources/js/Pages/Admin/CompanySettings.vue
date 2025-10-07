@@ -133,7 +133,25 @@ const saveSettings = async () => {
 
     if (data.success) {
       message.value = 'Settings updated successfully!'
-      await loadSettings() // Reload settings to get updated logo URL
+      
+      // Update form with fresh data from server
+      if (data.data) {
+        Object.keys(formData.value).forEach(key => {
+          if (data.data[key] && data.data[key].value !== undefined) {
+            formData.value[key] = data.data[key].value
+          }
+        })
+        
+        // Update logo preview
+        if (data.data.company_logo && data.data.company_logo.value) {
+          logoPreview.value = data.data.company_logo.value
+        }
+      }
+      
+      // Force page reload after 1 second to refresh all cached data
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
     } else {
       if (data.errors) {
         errors.value = data.errors

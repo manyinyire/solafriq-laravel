@@ -99,10 +99,13 @@ class CompanySettingsController extends Controller
                 Cache::forget("company_setting_{$key}");
             }
 
+            // Get fresh settings to return
+            $freshSettings = CompanySetting::getAll();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Company settings updated successfully',
-                'data' => $updated,
+                'data' => $freshSettings,
             ]);
 
         } catch (\Exception $e) {
