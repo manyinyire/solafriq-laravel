@@ -448,9 +448,11 @@ class OrderController extends Controller
             // Load order with relationships
             $order->load(['items', 'user', 'invoice']);
 
-            // Check if order has an invoice
+            // Generate invoice if it doesn't exist
             if (!$order->invoice) {
-                abort(404, 'Invoice not found for this order');
+                $invoiceService = app(\App\Services\InvoiceGeneratorService::class);
+                $invoiceService->generateInvoice($order);
+                $order->load('invoice');
             }
 
             // Check if PDF class exists
