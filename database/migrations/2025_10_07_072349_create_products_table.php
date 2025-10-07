@@ -1,0 +1,41 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->string('category'); // 'panel', 'inverter', 'battery', 'mounting', 'accessory'
+            $table->string('brand')->nullable();
+            $table->string('model')->nullable();
+            $table->decimal('price', 12, 2);
+            $table->string('image_url')->nullable();
+            $table->json('specifications')->nullable(); // Store technical specs as JSON
+            $table->integer('stock_quantity')->default(0);
+            $table->string('unit')->default('piece'); // piece, meter, set, etc.
+            $table->decimal('power_rating', 10, 2)->nullable(); // For panels/inverters (in watts)
+            $table->decimal('capacity', 10, 2)->nullable(); // For batteries (in kWh)
+            $table->boolean('is_active')->default(true);
+            $table->integer('sort_order')->default(0);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('products');
+    }
+};

@@ -85,6 +85,7 @@ Route::post('/email/verification-notification', [App\Http\Controllers\Auth\AuthC
 // Custom system builder (public)
 Route::post('custom-builder/calculate', [App\Http\Controllers\Api\V1\CustomBuilderController::class, 'calculate']);
 Route::post('custom-builder/validate', [App\Http\Controllers\Api\V1\CustomBuilderController::class, 'validateSystem']);
+Route::get('products/category/{category}', [App\Http\Controllers\Admin\ProductController::class, 'byCategory']);
 
 Route::middleware([
     'auth', 'verified'// Changed from auth:sanctum
@@ -186,6 +187,12 @@ Route::middleware([
         Route::post('/systems', [App\Http\Controllers\Admin\SolarSystemController::class, 'store'])->name('admin.systems.store');
         Route::put('/systems/{id}', [App\Http\Controllers\Admin\SolarSystemController::class, 'update'])->name('admin.systems.update');
         Route::delete('/systems/{id}', [App\Http\Controllers\Admin\SolarSystemController::class, 'destroy'])->name('admin.systems.destroy');
+
+        Route::get('/products', [App\Http\Controllers\Admin\ProductController::class, 'index'])->name('admin.products');
+        Route::get('/products/{id}', [App\Http\Controllers\Admin\ProductController::class, 'show'])->name('admin.products.show');
+        Route::post('/products', [App\Http\Controllers\Admin\ProductController::class, 'store'])->name('admin.products.store');
+        Route::put('/products/{id}', [App\Http\Controllers\Admin\ProductController::class, 'update'])->name('admin.products.update');
+        Route::delete('/products/{id}', [App\Http\Controllers\Admin\ProductController::class, 'destroy'])->name('admin.products.destroy');
 
         Route::get('/orders', function () {
             return Inertia::render('Admin/Orders');
