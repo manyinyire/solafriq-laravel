@@ -26,6 +26,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: Home },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Solar Systems', href: '/admin/systems', icon: Zap },
+  { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Warranties', href: '/admin/warranties', icon: Shield },
