@@ -11,7 +11,7 @@ class SolarSystemController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Admin/SolarSystems/Index', [
+        return Inertia::render('Admin/SolarSystems', [
             'systems' => SolarSystem::all(),
         ]);
     }
