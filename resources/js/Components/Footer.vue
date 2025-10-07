@@ -44,7 +44,7 @@ const footerLinks = ["Privacy Policy", "Terms of Service", "Cookie Policy"];
         <!-- Company Info -->
         <div class="space-y-6">
           <img
-            :src="companySettings.company_logo || '/images/solafriq-logo.png'"
+            :src="companySettings.company_logo || '/images/solafriq-logo.svg'"
             :alt="companySettings.company_name || 'SolaFriq'"
             class="h-9 w-auto brightness-0 invert"
           />
