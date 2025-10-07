@@ -70,9 +70,17 @@ class CompanySettingsController extends Controller
                     // Delete old logo if it exists
                     $oldLogo = CompanySetting::where('key', 'company_logo')->first();
                     if ($oldLogo && $oldLogo->value && !str_contains($oldLogo->value, '/images/solafriq-logo')) {
-                        $oldPath = str_replace('/storage/', '', $oldLogo->value);
-                        if (Storage::disk('public')->exists($oldPath)) {
-                            Storage::disk('public')->delete($oldPath);
+                        // Handle both storage and public paths
+                        if (str_starts_with($oldLogo->value, '/storage/')) {
+                            $oldPath = str_replace('/storage/', '', $oldLogo->value);
+                            if (Storage::disk('public')->exists($oldPath)) {
+                                Storage::disk('public')->delete($oldPath);
+                            }
+                        } elseif (str_starts_with($oldLogo->value, '/uploads/')) {
+                            $oldPath = public_path($oldLogo->value);
+                            if (file_exists($oldPath)) {
+                                unlink($oldPath);
+                            }
                         }
                     }
 

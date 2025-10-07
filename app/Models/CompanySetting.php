@@ -125,7 +125,10 @@ class CompanySetting extends Model
             case 'file':
                 // Handle file uploads
                 if (is_object($value) && method_exists($value, 'store')) {
-                    return $value->store('company-settings', 'public');
+                    // Store in public directory instead of storage for better compatibility
+                    $filename = time() . '_' . $value->getClientOriginalName();
+                    $value->move(public_path('uploads/company-settings'), $filename);
+                    return '/uploads/company-settings/' . $filename;
                 }
                 return $value;
             default:
