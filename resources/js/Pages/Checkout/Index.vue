@@ -70,13 +70,13 @@ const submitOrder = () => {
   console.log('Sending order data:', orderData);
 
   router.post('/checkout/process', orderData, {
-    preserveState: true,
     onStart: () => {
       console.log('Request started');
     },
     onSuccess: (response) => {
       console.log('Order success:', response);
       processing.value = false;
+      // Redirect will be handled by the server
     },
     onError: (responseErrors) => {
       console.log('Order error:', responseErrors);
