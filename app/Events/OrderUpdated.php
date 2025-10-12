@@ -16,15 +16,17 @@ class OrderUpdated
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $order;
+    public $changes;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(Order $order)
+    public function __construct(Order $order, array $changes = [])
     {
         $this->order = $order;
+        $this->changes = $changes;
     }
 
     /**

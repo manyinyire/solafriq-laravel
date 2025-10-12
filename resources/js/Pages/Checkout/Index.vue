@@ -49,16 +49,10 @@ const finalTotal = computed(() => {
 });
 
 const submitOrder = () => {
-  console.log('Place Order button clicked');
-  console.log('Form data:', form.value);
-  console.log('Final total:', finalTotal.value);
-
   if (!validateForm()) {
-    console.log('Form validation failed');
     return;
   }
 
-  console.log('Form validation passed, submitting order...');
   processing.value = true;
   errors.value = {};
 
@@ -67,31 +61,22 @@ const submitOrder = () => {
     total: finalTotal.value,
   };
 
-  console.log('Sending order data:', orderData);
-
   router.post('/checkout/process', orderData, {
-    onStart: () => {
-      console.log('Request started');
-    },
     onSuccess: (response) => {
-      console.log('Order success:', response);
       processing.value = false;
       // Redirect will be handled by the server
     },
     onError: (responseErrors) => {
-      console.log('Order error:', responseErrors);
       processing.value = false;
       errors.value = responseErrors;
     },
     onFinish: () => {
-      console.log('Request finished');
       processing.value = false;
     }
   });
 };
 
 const validateForm = () => {
-  console.log('Validating form...');
   const newErrors = {};
 
   if (!form.value.customer_name.trim()) {
@@ -144,11 +129,8 @@ const validateForm = () => {
     }
   }
 
-  console.log('Validation errors:', newErrors);
   errors.value = newErrors;
-  const isValid = Object.keys(newErrors).length === 0;
-  console.log('Form is valid:', isValid);
-  return isValid;
+  return Object.keys(newErrors).length === 0;
 };
 
 const goBack = () => {

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import ClientLayout from '@/Layouts/ClientLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { Home, ChevronRight, FileText, User, Gift, Truck, DollarSign, Package } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -29,9 +29,9 @@ const formatDate = (dateString) => {
       <!-- Breadcrumbs -->
       <div class="flex items-center text-sm text-gray-600 mb-6">
         <Home class="w-4 h-4 mr-2" />
-        <router-link to="/dashboard" class="hover:underline">Dashboard</router-link>
+        <Link href="/dashboard" class="hover:underline">Dashboard</Link>
         <ChevronRight class="w-4 h-4 mx-2" />
-        <router-link to="/orders" class="hover:underline">My Orders</router-link>
+        <Link href="/orders" class="hover:underline">My Orders</Link>
         <ChevronRight class="w-4 h-4 mx-2" />
         <span class="font-medium text-gray-800">Order #{{ order.id }}</span>
       </div>

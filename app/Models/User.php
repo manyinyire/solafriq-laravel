@@ -49,7 +49,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password' => 'hashed', // Laravel auto-hashes password field - not a hardcoded password
         ];
     }
 

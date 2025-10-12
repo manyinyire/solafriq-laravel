@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
+use App\Http\Requests\ConfirmPaymentRequest;
+use App\Http\Requests\ScheduleInstallationRequest;
+use App\Http\Requests\StoreOrderRequest;
+use App\Http\Requests\UpdateOrderRequest;
+use App\Http\Requests\UpdateOrderStatusRequest;
 use App\Http\Resources\OrderResource;
+use App\Models\Order;
 use App\Services\OrderProcessingService;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
@@ -76,33 +81,19 @@ class OrderController extends Controller
     /**
      * Store a newly created order.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreOrderRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'items' => 'required|array|min:1',
-            'items.*.name' => 'required|string',
-            'items.*.description' => 'nullable|string',
-            'items.*.price' => 'required|numeric|min:0',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.image_url' => 'nullable|url',
-            'items.*.type' => 'required|in:solar_system,product,custom_package,custom_system',
-            'customer_name' => 'required|string|max:255',
-            'customer_email' => 'required|email|max:255',
-            'customer_phone' => 'nullable|string|max:20',
-            'customer_address' => 'nullable|string',
-            'payment_method' => 'nullable|string|max:50',
-            'notes' => 'nullable|string',
-        ]);
-
         try {
-            $order = $this->orderService->createOrder($validated, $request->user());
+            $order = $this->orderService->createOrder($request->validated(), $request->user());
 
             return response()->json([
+                'success' => true,
                 'data' => new OrderResource($order),
                 'message' => 'Order created successfully',
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Failed to create order',
                 'error' => $e->getMessage(),
             ], 500);
@@ -130,27 +121,19 @@ class OrderController extends Controller
     /**
      * Update the specified order status (Admin only).
      */
-    public function update(Request $request, Order $order): JsonResponse
+    public function update(UpdateOrderRequest $request, Order $order): JsonResponse
     {
-        $this->authorize('update', $order);
-
-        $validated = $request->validate([
-            'status' => 'sometimes|in:PENDING,ACCEPTED,SCHEDULED,INSTALLED,RETURNED',
-            'payment_status' => 'sometimes|in:PENDING,PAID,FAILED,OVERDUE',
-            'payment_method' => 'nullable|string|max:50',
-            'tracking_number' => 'nullable|string|max:100',
-            'notes' => 'nullable|string',
-        ]);
-
         try {
-            $order = $this->orderService->updateOrder($order, $validated);
+            $order = $this->orderService->updateOrder($order, $request->validated());
 
             return response()->json([
+                'success' => true,
                 'data' => new OrderResource($order),
                 'message' => 'Order updated successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Failed to update order',
                 'error' => $e->getMessage(),
             ], 500);
@@ -253,70 +236,57 @@ class OrderController extends Controller
         }
     }
 
-    public function confirmPayment(Request $request, Order $order): JsonResponse
+    public function confirmPayment(ConfirmPaymentRequest $request, Order $order): JsonResponse
     {
-        $this->authorize('update', $order);
-
-        $validated = $request->validate([
-            'payment_method' => 'required|string|in:CASH,BANK_TRANSFER,CREDIT_CARD',
-            'transaction_reference' => 'nullable|string|max:255',
-        ]);
-
         try {
-            $order = $this->orderService->confirmPayment($order, $validated);
+            $order = $this->orderService->confirmPayment($order, $request->validated());
 
             return response()->json([
+                'success' => true,
                 'data' => new OrderResource($order),
                 'message' => 'Payment confirmed successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Failed to confirm payment',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-    public function scheduleInstallation(Request $request, Order $order): JsonResponse
+    public function scheduleInstallation(ScheduleInstallationRequest $request, Order $order): JsonResponse
     {
-        $this->authorize('update', $order);
-
-        $validated = $request->validate([
-            'installation_date' => 'required|date',
-        ]);
-
         try {
-            $order = $this->orderService->scheduleInstallation($order, $validated['installation_date']);
+            $order = $this->orderService->scheduleInstallation($order, $request->validated()['installation_date']);
 
             return response()->json([
+                'success' => true,
                 'data' => new OrderResource($order),
                 'message' => 'Installation scheduled successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Failed to schedule installation',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-    public function updateStatus(Request $request, Order $order): JsonResponse
+    public function updateStatus(UpdateOrderStatusRequest $request, Order $order): JsonResponse
     {
-        $this->authorize('update', $order);
-
-        $validated = $request->validate([
-            'status' => 'required|in:PENDING,ACCEPTED,SCHEDULED,INSTALLED,RETURNED',
-        ]);
-
         try {
-            $order = $this->orderService->updateOrderStatus($order, $validated['status']);
+            $order = $this->orderService->updateOrderStatus($order, $request->validated()['status']);
 
             return response()->json([
+                'success' => true,
                 'data' => new OrderResource($order),
                 'message' => 'Order status updated successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Failed to update order status',
                 'error' => $e->getMessage(),
             ], 500);
@@ -507,5 +477,37 @@ class OrderController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get all scheduled installations
+     */
+    public function scheduledInstallations(Request $request): JsonResponse
+    {
+        $query = Order::with(['items', 'user'])
+            ->where('status', 'SCHEDULED')
+            ->whereNotNull('installation_date')
+            ->orderBy('installation_date', 'asc');
+
+        // Filter by date range if provided
+        if ($request->filled('from_date')) {
+            $query->where('installation_date', '>=', $request->input('from_date'));
+        }
+
+        if ($request->filled('to_date')) {
+            $query->where('installation_date', '<=', $request->input('to_date'));
+        }
+
+        $orders = $query->paginate($request->input('per_page', 15));
+
+        return response()->json([
+            'data' => OrderResource::collection($orders),
+            'pagination' => [
+                'total' => $orders->total(),
+                'per_page' => $orders->perPage(),
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+            ],
+        ]);
     }
 }

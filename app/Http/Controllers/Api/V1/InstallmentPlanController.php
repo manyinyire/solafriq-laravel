@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
 
 class InstallmentPlanController extends Controller
 {
@@ -117,11 +118,10 @@ class InstallmentPlanController extends Controller
 
     private function createPaymentSchedule(InstallmentPlan $plan): void
     {
-        $startDate = new \DateTime($plan->start_date);
+        $startDate = Carbon::parse($plan->start_date);
 
         for ($i = 0; $i < $plan->duration_months; $i++) {
-            $dueDate = clone $startDate;
-            $dueDate->add(new \DateInterval("P{$i}M"));
+            $dueDate = $startDate->copy()->addMonths($i);
 
             $plan->payments()->create([
                 'amount' => $plan->monthly_payment,

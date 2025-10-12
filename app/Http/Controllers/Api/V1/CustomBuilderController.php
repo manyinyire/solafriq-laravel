@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Services\SolarSystemBuilderService;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Session;
 
 class CustomBuilderController extends Controller
 {
@@ -41,8 +43,8 @@ class CustomBuilderController extends Controller
         try {
             $calculation = $this->builderService->calculateSystemRequirements($validated);
 
-            // Cache the calculation for the session
-            $cacheKey = 'calculation_' . md5(json_encode($validated) . (Auth::id() ?? 'guest'));
+            // Cache the calculation for the session (using SHA256 for cache key)
+            $cacheKey = 'calculation_' . hash('sha256', json_encode($validated) . (Auth::id() ?? 'guest'));
             Cache::put($cacheKey, $calculation, now()->addHours(2));
 
             return response()->json([
@@ -178,6 +180,98 @@ class CustomBuilderController extends Controller
                 'message' => 'Quote generation failed',
                 'error' => $e->getMessage()
             ], 422);
+        }
+    }
+
+    /**
+     * Get products by category for the custom builder
+     */
+    public function getProducts(Request $request): JsonResponse
+    {
+        $category = $request->input('category');
+        
+        $query = Product::active()->orderBy('sort_order')->orderBy('name');
+        
+        if ($category) {
+            $query->where('category', $category);
+        }
+        
+        $products = $query->get();
+        
+        // Group products by category
+        $groupedProducts = [
+            'SOLAR_PANEL' => $products->where('category', 'SOLAR_PANEL')->values(),
+            'INVERTER' => $products->where('category', 'INVERTER')->values(),
+            'BATTERY' => $products->where('category', 'BATTERY')->values(),
+            'CHARGE_CONTROLLER' => $products->where('category', 'CHARGE_CONTROLLER')->values(),
+            'MOUNTING' => $products->where('category', 'MOUNTING')->values(),
+            'CABLES' => $products->where('category', 'CABLES')->values(),
+            'ACCESSORIES' => $products->where('category', 'ACCESSORIES')->values(),
+        ];
+        
+        return response()->json($groupedProducts);
+    }
+
+    /**
+     * Add custom system to cart
+     */
+    public function addToCart(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'system_name' => 'required|string|max:255',
+            'components' => 'required|array',
+            'components.*.product_id' => 'required|exists:products,id',
+            'components.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        try {
+            // Get cart from session
+            $cart = Session::get('cart', []);
+            
+            // Calculate total price
+            $totalPrice = 0;
+            $componentDetails = [];
+            
+            foreach ($validated['components'] as $component) {
+                $product = Product::find($component['product_id']);
+                $quantity = $component['quantity'];
+                $subtotal = $product->price * $quantity;
+                $totalPrice += $subtotal;
+                
+                $componentDetails[] = [
+                    'product_id' => $product->id,
+                    'name' => $product->full_name,
+                    'price' => $product->price,
+                    'quantity' => $quantity,
+                    'subtotal' => $subtotal,
+                    'image_url' => $product->image_url,
+                ];
+            }
+            
+            // Add custom system as a single cart item
+            $cartItem = [
+                'id' => 'custom_' . uniqid(),
+                'type' => 'CUSTOM_SYSTEM',
+                'name' => $validated['system_name'],
+                'price' => $totalPrice,
+                'quantity' => 1,
+                'components' => $componentDetails,
+                'image_url' => '/images/custom-system.png',
+            ];
+            
+            $cart[] = $cartItem;
+            Session::put('cart', $cart);
+            
+            return response()->json([
+                'message' => 'Custom system added to cart successfully',
+                'cart_item' => $cartItem,
+                'cart_count' => count($cart),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to add to cart',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

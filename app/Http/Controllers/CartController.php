@@ -7,6 +7,7 @@ use App\Models\CartItem;
 use App\Models\SolarSystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class CartController extends Controller
@@ -51,8 +52,14 @@ class CartController extends Controller
 
             return back()->with('success', 'Product added to cart successfully!');
         } catch (\Exception $e) {
-            \Log::error('Cart add error: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Failed to add product to cart: ' . $e->getMessage()]);
+            Log::error('Cart add error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => Auth::id(),
+                'system_id' => $request->system_id ?? null,
+                'quantity' => $request->quantity ?? null,
+            ]);
+            return back()->withErrors(['error' => 'Failed to add product to cart. Please try again.']);
         }
     }
 

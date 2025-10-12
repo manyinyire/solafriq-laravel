@@ -21,6 +21,7 @@ class Order extends Model
         'payment_status',
         'payment_method',
         'tracking_number',
+        'installation_date',
         'notes',
         'user_id',
         'customer_name',
@@ -32,7 +33,6 @@ class Order extends Model
         'recipient_email',
         'recipient_phone',
         'recipient_address',
-        'installation_date',
     ];
 
     /**

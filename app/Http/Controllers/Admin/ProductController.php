@@ -126,4 +126,79 @@ class ProductController extends Controller
 
         return response()->json($products);
     }
+
+    /**
+     * Export products to CSV
+     */
+    public function exportCsv(Request $request)
+    {
+        $query = Product::query();
+
+        // Apply same filters as index
+        if ($request->has('category') && $request->category !== 'all') {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->has('search') && $request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('brand', 'like', '%' . $request->search . '%')
+                  ->orWhere('model', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $products = $query->orderBy('sort_order')->orderBy('name')->get();
+
+        $filename = 'products_' . date('Y-m-d_His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($products) {
+            $file = fopen('php://output', 'w');
+            
+            // Add CSV headers
+            fputcsv($file, [
+                'ID',
+                'Name',
+                'Brand',
+                'Model',
+                'Category',
+                'Price',
+                'Stock Quantity',
+                'Unit',
+                'Power Rating (W)',
+                'Capacity (Ah)',
+                'Is Active',
+                'Sort Order',
+                'Created At'
+            ]);
+
+            // Add data rows
+            foreach ($products as $product) {
+                fputcsv($file, [
+                    $product->id,
+                    $product->name,
+                    $product->brand,
+                    $product->model,
+                    $product->category,
+                    $product->price,
+                    $product->stock_quantity,
+                    $product->unit,
+                    $product->power_rating,
+                    $product->capacity,
+                    $product->is_active ? 'Yes' : 'No',
+                    $product->sort_order,
+                    $product->created_at->format('Y-m-d H:i:s')
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

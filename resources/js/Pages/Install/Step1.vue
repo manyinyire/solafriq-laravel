@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/vue3';
 
 export default {
   props: {
@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     proceed() {
-      Inertia.visit(route('install.step2'));
+      router.visit(route('install.step2'));
     },
   },
 };

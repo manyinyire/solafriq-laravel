@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Invoice;
 use App\Models\User;
+use App\Models\Product;
 use App\Jobs\ProcessOrderJob;
 use App\Jobs\SendOrderNotificationJob;
 use App\Events\OrderCreated;
@@ -45,7 +46,7 @@ class OrderProcessingService
                 'customer_address' => $orderData['customer_address'] ?? null,
             ]);
 
-            // Create order items
+            // Create order items and deduct stock
             foreach ($orderData['items'] as $itemData) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -56,6 +57,11 @@ class OrderProcessingService
                     'image_url' => $itemData['image_url'] ?? null,
                     'type' => $itemData['type'],
                 ]);
+                
+                // Deduct stock if product_id is provided
+                if (isset($itemData['product_id'])) {
+                    $this->deductStock($itemData['product_id'], $itemData['quantity']);
+                }
             }
 
             // Generate invoice
@@ -222,6 +228,9 @@ class OrderProcessingService
 
         // Create warranties for applicable items
         $this->createWarranties($order);
+        
+        // Send order accepted email to customer
+        $this->emailService->sendOrderAcceptedNotification($order);
     }
 
     /**
@@ -362,13 +371,18 @@ class OrderProcessingService
     public function confirmPayment(Order $order, array $paymentData): Order
     {
         return DB::transaction(function () use ($order, $paymentData) {
-            $order->update([
+            $updateData = [
                 'payment_status' => 'PAID',
                 'payment_method' => $paymentData['payment_method'],
-                'notes' => ($order->notes ? $order->notes . "\n\n" : '') .
-                          "Payment confirmed by admin. Method: " . $paymentData['payment_method'] .
-                          (isset($paymentData['transaction_reference']) ? ", Ref: " . $paymentData['transaction_reference'] : ''),
-            ]);
+            ];
+            
+            // Only add transaction reference if provided
+            if (isset($paymentData['transaction_reference']) && !empty($paymentData['transaction_reference'])) {
+                $updateData['notes'] = ($order->notes ? $order->notes . "\n\n" : '') .
+                              "Payment Reference: " . $paymentData['transaction_reference'];
+            }
+            
+            $order->update($updateData);
 
             // Update invoice
             if ($order->invoice) {
@@ -396,7 +410,8 @@ class OrderProcessingService
                 'installation_date' => $installationDate,
             ]);
 
-            $this->handleStatusChange($order, 'PROCESSING', 'SCHEDULED');
+            // Send installation scheduled email
+            $this->emailService->sendInstallationScheduledNotification($order);
 
             Log::info('Installation scheduled', [
                 'order_id' => $order->id,
@@ -475,5 +490,39 @@ class OrderProcessingService
             'amount' => $refundAmount,
             'reference' => 'REFUND_' . uniqid(),
         ];
+    }
+
+    /**
+     * Deduct stock quantity for a product
+     */
+    private function deductStock(int $productId, int $quantity): void
+    {
+        $product = Product::find($productId);
+        
+        if ($product) {
+            $newStock = max(0, $product->stock_quantity - $quantity);
+            $product->update(['stock_quantity' => $newStock]);
+            
+            Log::info('Stock deducted', [
+                'product_id' => $productId,
+                'product_name' => $product->name,
+                'quantity_deducted' => $quantity,
+                'remaining_stock' => $newStock,
+            ]);
+            
+            // Log warning if stock is low
+            if ($newStock <= 5 && $newStock > 0) {
+                Log::warning('Low stock alert', [
+                    'product_id' => $productId,
+                    'product_name' => $product->name,
+                    'remaining_stock' => $newStock,
+                ]);
+            } elseif ($newStock === 0) {
+                Log::warning('Out of stock', [
+                    'product_id' => $productId,
+                    'product_name' => $product->name,
+                ]);
+            }
+        }
     }
 }

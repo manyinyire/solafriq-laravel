@@ -8,6 +8,8 @@ use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class CheckoutController extends Controller
@@ -92,7 +94,7 @@ class CheckoutController extends Controller
                     'description' => $solarSystem->description ?? $solarSystem->capacity . 'kW Solar System',
                     'quantity' => $cartItem->quantity,
                     'price' => $cartItem->price,
-                    'image_url' => null, // Set to null or add image handling later
+                    'image_url' => $solarSystem->image_url ?? null,
                     'type' => 'solar_system',
                 ]);
             }
@@ -108,6 +110,12 @@ class CheckoutController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+            Log::error('Order processing failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => Auth::id(),
+                'cart_id' => $cart->id ?? null,
+            ]);
             return back()->withErrors(['error' => 'There was an error processing your order. Please try again.']);
         }
     }
@@ -140,7 +148,11 @@ class CheckoutController extends Controller
 
     private function generateTrackingNumber(): string
     {
-        return 'SF' . date('Y') . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
+        do {
+            $trackingNumber = 'SF' . date('Y') . str_pad(random_int(1, 99999), 5, '0', STR_PAD_LEFT);
+        } while (Order::where('tracking_number', $trackingNumber)->exists());
+        
+        return $trackingNumber;
     }
 
     private function getPaymentStatus(string $paymentMethod): string

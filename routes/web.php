@@ -83,12 +83,18 @@ Route::post('/email/verification-notification', [App\Http\Controllers\Auth\AuthC
     ->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 // Custom system builder (public)
+Route::get('custom-builder', function () {
+    return Inertia::render('CustomBuilder');
+})->name('custom-builder');
+
+Route::get('custom-builder/products', [App\Http\Controllers\Api\V1\CustomBuilderController::class, 'getProducts']);
 Route::post('custom-builder/calculate', [App\Http\Controllers\Api\V1\CustomBuilderController::class, 'calculate']);
 Route::post('custom-builder/validate', [App\Http\Controllers\Api\V1\CustomBuilderController::class, 'validateSystem']);
+Route::post('custom-builder/add-to-cart', [App\Http\Controllers\Api\V1\CustomBuilderController::class, 'addToCart']);
 Route::get('products/category/{category}', [App\Http\Controllers\Admin\ProductController::class, 'byCategory']);
 
 Route::middleware([
-    'auth', 'verified'// Changed from auth:sanctum
+    'auth', 'verified'
 ])->group(function () {
     // User Dashboard
     Route::get('/dashboard', function () {
@@ -190,6 +196,7 @@ Route::middleware([
         Route::delete('/systems/{id}', [App\Http\Controllers\Admin\SolarSystemController::class, 'destroy'])->name('admin.systems.destroy');
 
         Route::get('/products', [App\Http\Controllers\Admin\ProductController::class, 'index'])->name('admin.products');
+        Route::get('/products/export/csv', [App\Http\Controllers\Admin\ProductController::class, 'exportCsv'])->name('admin.products.export');
         Route::get('/products/{id}', [App\Http\Controllers\Admin\ProductController::class, 'show'])->name('admin.products.show');
         Route::post('/products', [App\Http\Controllers\Admin\ProductController::class, 'store'])->name('admin.products.store');
         Route::put('/products/{id}', [App\Http\Controllers\Admin\ProductController::class, 'update'])->name('admin.products.update');
@@ -228,6 +235,12 @@ Route::middleware([
         Route::get('/warranties', function () {
             return Inertia::render('Admin/Warranties');
         })->name('admin.warranties');
+
+        Route::get('/installations', function () {
+            return Inertia::render('Admin/ScheduledInstallations');
+        })->name('admin.installations');
+
+        Route::get('/installations-data', [\App\Http\Controllers\Api\V1\OrderController::class, 'scheduledInstallations'])->name('admin.installations.data');
     });
 });
 

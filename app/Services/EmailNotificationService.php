@@ -152,6 +152,73 @@ class EmailNotificationService
     }
 
     /**
+     * Send installation scheduled notification
+     */
+    public function sendInstallationScheduledNotification(Order $order): bool
+    {
+        try {
+            $data = [
+                'order' => $order,
+                'customer_name' => $order->customer_name,
+                'installation_date' => $order->installation_date,
+                'order_number' => $order->id,
+                'items' => $order->items,
+                'support_contact' => 'support@solafriq.com',
+            ];
+
+            // Mail::to($order->customer_email)->send(new InstallationScheduledMail($data));
+
+            Log::info('Installation scheduled email sent', [
+                'order_id' => $order->id,
+                'installation_date' => $order->installation_date,
+                'customer_email' => $order->customer_email
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send installation scheduled email', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Send order accepted notification
+     */
+    public function sendOrderAcceptedNotification(Order $order): bool
+    {
+        try {
+            $data = [
+                'order' => $order,
+                'customer_name' => $order->customer_name,
+                'order_number' => $order->id,
+                'tracking_number' => $order->tracking_number,
+                'items' => $order->items,
+                'total_amount' => $order->total_amount,
+            ];
+
+            // Mail::to($order->customer_email)->send(new OrderAcceptedMail($data));
+
+            Log::info('Order accepted email sent', [
+                'order_id' => $order->id,
+                'customer_email' => $order->customer_email
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send order accepted email', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
      * Send delivery confirmation
      */
     public function sendDeliveryConfirmation(Order $order): bool

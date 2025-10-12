@@ -11,8 +11,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\WarrantyClaimStatusUpdated;
 
-class WarrantyController extends Controller
+class warrantyController extends Controller
 {
     public function index(): JsonResponse
     {
@@ -134,7 +136,16 @@ class WarrantyController extends Controller
         $warrantyClaim->update($validated);
 
         // Send notification to user about status change
-        // TODO: Implement notification service
+        if ($warrantyClaim->user) {
+            try {
+                $warrantyClaim->user->notify(new WarrantyClaimStatusUpdated($warrantyClaim));
+            } catch (\Exception $e) {
+                \Log::warning('Failed to send warranty claim notification', [
+                    'claim_id' => $warrantyClaim->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
 
         return response()->json(new WarrantyClaimResource($warrantyClaim->load(['warranty', 'user'])));
     }

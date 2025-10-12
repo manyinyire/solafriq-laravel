@@ -15,7 +15,10 @@ import {
   Zap,
   Battery,
   Box,
-  Wrench
+  Wrench,
+  Download,
+  Grid,
+  List
 } from 'lucide-vue-next'
 import axios from 'axios'
 
@@ -34,6 +37,7 @@ const selectedProduct = ref(null)
 const saving = ref(false)
 const deleting = ref(false)
 const errors = ref({})
+const viewMode = ref('grid') // 'grid' or 'list'
 
 const categories = [
   { value: 'all', label: 'All Categories', icon: Package },
@@ -232,6 +236,14 @@ const deleteProduct = async (product) => {
     deleting.value = false
   }
 }
+
+const exportToCSV = () => {
+  const params = new URLSearchParams({
+    category: selectedCategory.value,
+    search: searchQuery.value
+  })
+  window.location.href = `/admin/products/export/csv?${params.toString()}`
+}
 </script>
 
 <template>
@@ -245,10 +257,16 @@ const deleteProduct = async (product) => {
           <h1 class="text-3xl font-bold text-gray-900">Products</h1>
           <p class="text-gray-600 mt-1">Manage solar products for systems and custom builder</p>
         </div>
-        <button @click="openCreateModal" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center">
-          <Plus class="h-4 w-4 mr-2" />
-          Add Product
-        </button>
+        <div class="flex items-center space-x-3">
+          <button @click="exportToCSV" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <Download class="h-4 w-4 mr-2" />
+            Export CSV
+          </button>
+          <button @click="openCreateModal" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <Plus class="h-4 w-4 mr-2" />
+            Add Product
+          </button>
+        </div>
       </div>
 
       <!-- Category Filters -->
@@ -271,7 +289,7 @@ const deleteProduct = async (product) => {
         </div>
       </div>
 
-      <!-- Search -->
+      <!-- Search & View Toggle -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center space-x-4">
           <div class="flex-1 relative">
@@ -284,13 +302,35 @@ const deleteProduct = async (product) => {
               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
+          <div class="flex border border-gray-300 rounded-lg overflow-hidden">
+            <button
+              @click="viewMode = 'grid'"
+              :class="[
+                'px-4 py-2 flex items-center',
+                viewMode === 'grid' ? 'bg-orange-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+              ]"
+            >
+              <Grid class="h-4 w-4 mr-2" />
+              Grid
+            </button>
+            <button
+              @click="viewMode = 'list'"
+              :class="[
+                'px-4 py-2 flex items-center border-l border-gray-300',
+                viewMode === 'list' ? 'bg-orange-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+              ]"
+            >
+              <List class="h-4 w-4 mr-2" />
+              List
+            </button>
+          </div>
           <button @click="performSearch" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg">
             Search
           </button>
         </div>
       </div>
 
-      <!-- Products Grid -->
+      <!-- Products Grid View -->
       <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="i in 6" :key="i" class="bg-white rounded-lg shadow p-6">
           <div class="animate-pulse">
@@ -301,7 +341,8 @@ const deleteProduct = async (product) => {
         </div>
       </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Grid View -->
+      <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           v-for="product in filteredProducts"
           :key="product.id"
@@ -366,6 +407,80 @@ const deleteProduct = async (product) => {
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- List View -->
+      <div v-else-if="viewMode === 'list'" class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specs</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="product in filteredProducts" :key="product.id" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <component :is="getCategoryIcon(product.category)" class="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                    <div class="text-sm text-gray-500">{{ product.brand }} {{ product.model }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span :class="['px-2 py-1 text-xs font-medium rounded-full', getCategoryColor(product.category)]">
+                  {{ getCategoryLabel(product.category) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                {{ formatCurrency(product.price) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span :class="[
+                  'text-sm font-medium',
+                  product.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'
+                ]">
+                  {{ product.stock_quantity }} {{ product.unit }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <div v-if="product.power_rating">{{ product.power_rating }}W</div>
+                <div v-if="product.capacity">{{ product.capacity }}Ah</div>
+                <div v-if="!product.power_rating && !product.capacity">-</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span :class="[
+                  'px-2 py-1 text-xs font-medium rounded-full',
+                  product.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                ]">
+                  {{ product.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end space-x-2">
+                  <button @click="openViewModal(product)" class="text-orange-600 hover:text-orange-900">
+                    <Eye class="h-4 w-4" />
+                  </button>
+                  <button @click="openEditModal(product)" class="text-gray-600 hover:text-gray-900">
+                    <Edit class="h-4 w-4" />
+                  </button>
+                  <button @click="deleteProduct(product)" :disabled="deleting" class="text-red-600 hover:text-red-900">
+                    <Trash2 class="h-4 w-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Empty State -->

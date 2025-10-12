@@ -1,12 +1,15 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { Home, ChevronRight, User, Gift, Truck, DollarSign, Package, Info } from 'lucide-vue-next';
-import axios from 'axios';
+import { orderService } from '@/Services';
 
 const props = defineProps({
-  orderId: [String, Number],
+  orderId: {
+    type: [String, Number],
+    required: true,
+  },
 });
 
 const order = ref(null);
@@ -15,7 +18,7 @@ const error = ref(null);
 
 const fetchOrder = async () => {
   try {
-    const response = await axios.get(`/admin/orders/${props.orderId}/data`);
+    const response = await orderService.getOrder(props.orderId);
     order.value = response.data.data;
   } catch (err) {
     error.value = 'Failed to load order details.';
@@ -48,16 +51,21 @@ const formatDate = (dateString) => {
 
 const isUpdating = ref(false);
 const installationDate = ref('');
+const showPaymentModal = ref(false);
+const paymentMethod = ref('CASH');
+const transactionReference = ref('');
 
 const updateStatus = async (status) => {
   isUpdating.value = true;
   try {
     if (status === 'PROCESSING') {
-      await axios.put(`/admin/orders/${props.orderId}/accept`);
+      await orderService.acceptOrder(props.orderId);
+    } else if (status === 'CANCELLED') {
+      await orderService.declineOrder(props.orderId);
     } else {
-      await axios.put(`/admin/orders/${props.orderId}/status`, { status });
+      await orderService.updateStatus(props.orderId, status);
     }
-    fetchOrder(); // Refresh order details
+    await fetchOrder(); // Refresh order details
   } catch (err) {
     console.error('Failed to update order status:', err);
     alert('Failed to update order status. Please try again.');
@@ -66,15 +74,36 @@ const updateStatus = async (status) => {
   }
 };
 
+const openPaymentModal = () => {
+  showPaymentModal.value = true;
+};
+
+const closePaymentModal = () => {
+  showPaymentModal.value = false;
+  paymentMethod.value = 'CASH';
+  transactionReference.value = '';
+};
+
 const confirmPayment = async () => {
+  // Validate transaction reference for bank transfer
+  if (paymentMethod.value === 'BANK_TRANSFER' && !transactionReference.value.trim()) {
+    alert('Please enter a transaction reference for bank transfer.');
+    return;
+  }
+
   isUpdating.value = true;
   try {
-    // For simplicity, we'll use a generic payment confirmation
-    await axios.put(`/admin/orders/${props.orderId}/confirm-payment`, {
-      payment_method: 'BANK_TRANSFER',
-      transaction_reference: `ADMIN_CONF_${Date.now()}`,
-    });
-    fetchOrder();
+    const payload = {
+      payment_method: paymentMethod.value,
+    };
+    
+    if (paymentMethod.value === 'BANK_TRANSFER') {
+      payload.transaction_reference = transactionReference.value;
+    }
+    
+    await orderService.confirmPayment(props.orderId, payload);
+    closePaymentModal();
+    await fetchOrder();
   } catch (err) {
     console.error('Failed to confirm payment:', err);
     alert('Failed to confirm payment. Please try again.');
@@ -86,10 +115,8 @@ const confirmPayment = async () => {
 const scheduleInstallation = async () => {
   isUpdating.value = true;
   try {
-    await axios.put(`/admin/orders/${props.orderId}/schedule-installation`, {
-      installation_date: installationDate.value,
-    });
-    fetchOrder();
+    await orderService.scheduleInstallation(props.orderId, installationDate.value);
+    await fetchOrder();
   } catch (err) {
     console.error('Failed to schedule installation:', err);
     alert('Failed to schedule installation. Please try again.');
@@ -100,15 +127,16 @@ const scheduleInstallation = async () => {
 
 const downloadInvoice = async () => {
   try {
-    const response = await axios.get(`/admin/orders/${props.orderId}/invoice-pdf`, {
-      responseType: 'blob',
-    });
+    const response = await orderService.downloadInvoice(props.orderId);
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', `invoice-order-${props.orderId}.pdf`);
     document.body.appendChild(link);
     link.click();
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   } catch (err) {
     console.error('Failed to download invoice:', err);
     alert('Failed to download invoice. Please try again.');
@@ -133,9 +161,9 @@ const downloadInvoice = async () => {
         <!-- Breadcrumbs -->
         <div class="flex items-center text-sm text-gray-600 mb-6">
           <Home class="w-4 h-4 mr-2" />
-          <router-link to="/admin/dashboard" class="hover:underline">Admin Dashboard</router-link>
+          <Link href="/admin/dashboard" class="hover:underline">Admin Dashboard</Link>
           <ChevronRight class="w-4 h-4 mx-2" />
-          <router-link to="/admin/orders" class="hover:underline">Orders</router-link>
+          <Link href="/admin/orders" class="hover:underline">Orders</Link>
           <ChevronRight class="w-4 h-4 mx-2" />
           <span class="font-medium text-gray-800">Order #{{ order.id }}</span>
         </div>
@@ -273,7 +301,7 @@ const downloadInvoice = async () => {
 
                   <!-- Step 2: Confirm Payment -->
                   <div v-if="order.status === 'PROCESSING' && order.payment_status === 'PENDING'">
-                    <button @click="confirmPayment" :disabled="isUpdating" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">Confirm Payment</button>
+                    <button @click="openPaymentModal" :disabled="isUpdating" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">Confirm Payment</button>
                   </div>
 
                   <!-- Step 3: Schedule Installation -->
@@ -294,6 +322,69 @@ const downloadInvoice = async () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Confirmation Modal -->
+    <div v-if="showPaymentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Confirm Payment</h2>
+        
+        <div class="space-y-4">
+          <!-- Payment Method Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+            <div class="space-y-2">
+              <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50" :class="paymentMethod === 'CASH' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'">
+                <input type="radio" v-model="paymentMethod" value="CASH" class="mr-3">
+                <span class="font-medium">Cash Payment</span>
+              </label>
+              <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50" :class="paymentMethod === 'BANK_TRANSFER' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'">
+                <input type="radio" v-model="paymentMethod" value="BANK_TRANSFER" class="mr-3">
+                <span class="font-medium">Bank Transfer</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Transaction Reference (only for Bank Transfer) -->
+          <div v-if="paymentMethod === 'BANK_TRANSFER'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Transaction Reference *</label>
+            <input 
+              type="text" 
+              v-model="transactionReference" 
+              placeholder="Enter transaction reference number"
+              class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+            <p class="text-xs text-gray-500 mt-1">Enter the bank transaction reference number</p>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Order Total:</span>
+              <span class="font-bold text-lg">${{ total.toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex space-x-3 mt-6">
+          <button 
+            @click="closePaymentModal" 
+            :disabled="isUpdating"
+            class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="confirmPayment" 
+            :disabled="isUpdating"
+            class="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+          >
+            {{ isUpdating ? 'Processing...' : 'Confirm Payment' }}
+          </button>
         </div>
       </div>
     </div>

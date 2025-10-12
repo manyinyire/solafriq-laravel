@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->decimal('total_amount', 12, 2);
-            $table->enum('status', ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'])->default('PENDING');
+            $table->enum('status', ['PENDING', 'PROCESSING', 'SCHEDULED', 'INSTALLED', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RETURNED', 'REFUNDED'])->default('PENDING');
             $table->enum('payment_status', ['PENDING', 'PAID', 'FAILED', 'OVERDUE'])->default('PENDING');
             $table->string('payment_method')->nullable();
             $table->string('tracking_number')->nullable();
