@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\SolarSystem;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +16,7 @@ class CartController extends Controller
     public function index()
     {
         $cart = $this->getCart();
-        $cartItems = $cart ? $cart->items()->with('solarSystem')->get() : collect();
+        $cartItems = $cart ? $cart->items()->with(['solarSystem', 'product'])->get() : collect();
 
         return Inertia::render('Cart/Index', [
             'cart' => $cart,
@@ -29,37 +30,75 @@ class CartController extends Controller
     {
         try {
             $request->validate([
-                'system_id' => 'required|exists:solar_systems,id',
-                'quantity' => 'required|integer|min:1|max:10',
+                'type' => 'required|in:solar_system,product',
+                'system_id' => 'required_if:type,solar_system|exists:solar_systems,id',
+                'product_id' => 'required_if:type,product|exists:products,id',
+                'quantity' => 'required|integer|min:1|max:100',
             ]);
 
-            $solarSystem = SolarSystem::findOrFail($request->system_id);
             $cart = $this->getCart();
 
-            $existingItem = $cart->items()->where('solar_system_id', $solarSystem->id)->first();
+            if ($request->type === 'solar_system') {
+                $solarSystem = SolarSystem::findOrFail($request->system_id);
+                
+                $existingItem = $cart->items()
+                    ->where('solar_system_id', $solarSystem->id)
+                    ->where('item_type', 'solar_system')
+                    ->first();
 
-            if ($existingItem) {
-                $existingItem->update([
-                    'quantity' => $existingItem->quantity + $request->quantity,
-                ]);
+                if ($existingItem) {
+                    $existingItem->update([
+                        'quantity' => $existingItem->quantity + $request->quantity,
+                    ]);
+                } else {
+                    $cart->items()->create([
+                        'solar_system_id' => $solarSystem->id,
+                        'item_type' => 'solar_system',
+                        'quantity' => $request->quantity,
+                        'price' => $solarSystem->price,
+                    ]);
+                }
+
+                return back()->with('success', 'Solar system added to cart successfully!');
             } else {
-                $cart->items()->create([
-                    'solar_system_id' => $solarSystem->id,
-                    'quantity' => $request->quantity,
-                    'price' => $solarSystem->price,
-                ]);
-            }
+                $product = Product::findOrFail($request->product_id);
+                
+                if (!$product->is_active || $product->stock_quantity < $request->quantity) {
+                    return back()->withErrors(['error' => 'Product is out of stock or insufficient quantity available.']);
+                }
 
-            return back()->with('success', 'Product added to cart successfully!');
+                $existingItem = $cart->items()
+                    ->where('product_id', $product->id)
+                    ->where('item_type', 'product')
+                    ->first();
+
+                if ($existingItem) {
+                    $newQuantity = $existingItem->quantity + $request->quantity;
+                    if ($newQuantity > $product->stock_quantity) {
+                        return back()->withErrors(['error' => 'Cannot add more items. Stock limit reached.']);
+                    }
+                    $existingItem->update([
+                        'quantity' => $newQuantity,
+                    ]);
+                } else {
+                    $cart->items()->create([
+                        'product_id' => $product->id,
+                        'item_type' => 'product',
+                        'quantity' => $request->quantity,
+                        'price' => $product->price,
+                    ]);
+                }
+
+                return back()->with('success', 'Product added to cart successfully!');
+            }
         } catch (\Exception $e) {
             Log::error('Cart add error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'user_id' => Auth::id(),
-                'system_id' => $request->system_id ?? null,
-                'quantity' => $request->quantity ?? null,
+                'request' => $request->all(),
             ]);
-            return back()->withErrors(['error' => 'Failed to add product to cart. Please try again.']);
+            return back()->withErrors(['error' => 'Failed to add item to cart. Please try again.']);
         }
     }
 

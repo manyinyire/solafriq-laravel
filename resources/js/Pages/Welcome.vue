@@ -47,8 +47,6 @@ const activeFilter = ref("all");
 
 const filters = [
     { id: "all", label: "All Systems", icon: Zap },
-    { id: "residential", label: "Residential", icon: Users },
-    { id: "commercial", label: "Commercial", icon: TrendingUp },
     { id: "popular", label: "Most Popular", icon: Star },
   ];
 
@@ -56,9 +54,7 @@ const filteredSystems = computed(() => {
     if (!props.solarSystems) return [];
     return props.solarSystems.filter((system) => {
         if (activeFilter.value === "all") return true;
-        if (activeFilter.value === "popular") return system.isPopular;
-        if (activeFilter.value === "residential") return system.capacity <= 5;
-        if (activeFilter.value === "commercial") return system.capacity > 5;
+        if (activeFilter.value === "popular") return system.is_popular;
         return true;
     });
 });
@@ -138,7 +134,7 @@ const testimonials = [
       content:
         "The installment plan was a game-changer for my family. Working on cruise ships means irregular income, but SolaFriq made it possible for us to have reliable power at home.",
       rating: 5,
-      image: "/placeholder.svg?height=80&width=80&query=professional african man smiling",
+      initials: "KA",
     },
     {
       name: "Amina Hassan",
@@ -147,7 +143,7 @@ const testimonials = [
       content:
         "Our 3KVA system powers the entire restaurant efficiently. The installation was seamless and the ongoing support has been exceptional. Highly recommend!",
       rating: 5,
-      image: "/placeholder.svg?height=80&width=80&query=professional african woman entrepreneur",
+      initials: "AH",
     },
     {
       name: "David Mwangi",
@@ -156,7 +152,7 @@ const testimonials = [
       content:
         "The custom builder tool is incredible! It helped me design the perfect system for my home office with real-time compatibility checks. Brilliant technology.",
       rating: 5,
-      image: "/placeholder.svg?height=80&width=80&query=african tech professional working",
+      initials: "DM",
     },
   ];
 
@@ -287,28 +283,28 @@ const testimonials = [
         </div>
 
         <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <div v-for="(system, index) in filteredSystems" :key="system.id" class="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden transform hover:-translate-y-2" :style="{ animationDelay: `${index * 100}ms` }">
+          <div v-for="(system, index) in filteredSystems" :key="system?.id || index" class="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden transform hover:-translate-y-2" :style="{ animationDelay: `${index * 100}ms` }">
               <div class="p-0">
                 <div class="relative overflow-hidden">
-                  <div class="h-64 bg-gradient-to-br relative" :style="{ background: system.gradient_colors || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }">
+                  <div class="h-64 bg-gradient-to-br relative" :style="{ background: system?.gradient_colors || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }">
                     <div class="absolute inset-0 bg-black/10"></div>
 
                     <div class="absolute top-4 left-4 flex flex-col space-y-2">
-                      <span v-if="system.isPopular" class="inline-block bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg px-2 py-1 rounded-full text-xs font-bold">
+                      <span v-if="system?.is_popular" class="inline-block bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg px-2 py-1 rounded-full text-xs font-bold">
                         <Star class="w-3 h-3 mr-1 inline-block" />
                         Most Popular
                       </span>
-                      <span v-if="system.originalPrice && system.originalPrice > system.price" class="inline-block bg-red-500 text-white shadow-lg px-2 py-1 rounded-full text-xs font-bold">
-                        Save ${{ (system.originalPrice - system.price).toLocaleString() }}
+                      <span v-if="system?.original_price && system.original_price > system.price" class="inline-block bg-red-500 text-white shadow-lg px-2 py-1 rounded-full text-xs font-bold">
+                        Save ${{ (system.original_price - system.price).toLocaleString() }}
                       </span>
                     </div>
 
                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
-                      <h3 class="text-2xl font-bold text-white mb-2">{{ system.name }}</h3>
+                      <h3 class="text-2xl font-bold text-white mb-2">{{ system?.name || 'Solar System' }}</h3>
                       <div class="flex items-center space-x-4 text-white/90">
                         <div class="flex items-center space-x-1">
                           <Zap class="w-4 h-4" />
-                          <span class="text-sm">{{ system.capacity }}kW</span>
+                          <span class="text-sm">{{ system?.capacity || 0 }}kW</span>
                         </div>
                         <div class="flex items-center space-x-1">
                           <Shield class="w-4 h-4" />
@@ -320,7 +316,7 @@ const testimonials = [
                 </div>
 
                 <div class="p-6 space-y-4">
-                  <p class="text-gray-600 line-clamp-2 leading-relaxed">{{ system.shortDescription }}</p>
+                  <p class="text-gray-600 line-clamp-2 leading-relaxed">{{ system?.short_description || system?.description || 'High-quality solar system' }}</p>
 
                   <div class="flex flex-wrap gap-2">
                     <span class="inline-block text-green-600 border-green-200 bg-green-50 px-2 py-1 rounded-full text-xs font-bold">
@@ -336,19 +332,19 @@ const testimonials = [
                   <div class="space-y-2">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center space-x-2">
-                        <span class="text-3xl font-bold text-gray-900">${{ system.price.toLocaleString() }}</span>
-                        <span v-if="system.originalPrice && system.originalPrice > system.price" class="text-lg text-gray-500 line-through">
-                          ${{ system.originalPrice.toLocaleString() }}
+                        <span class="text-3xl font-bold text-gray-900">${{ system?.price ? parseFloat(system.price).toLocaleString() : '0' }}</span>
+                        <span v-if="system?.original_price && system.original_price > system.price" class="text-lg text-gray-500 line-through">
+                          ${{ parseFloat(system.original_price).toLocaleString() }}
                         </span>
                       </div>
                     </div>
-                    <p v-if="system.installmentPrice" class="text-sm text-gray-600">
-                      or <span class="font-semibold text-orange-600">${{ system.installmentPrice }}/month</span> for {{ system.installmentMonths }} months
+                    <p v-if="system?.installment_price" class="text-sm text-gray-600">
+                      or <span class="font-semibold text-orange-600">${{ system.installment_price }}/month</span> for {{ system.installment_months }} months
                     </p>
                   </div>
 
                   <div class="flex space-x-3 pt-2">
-                    <a :href="`/systems/${system.id}`" class="flex-1">
+                    <a :href="`/systems/${system?.id}`" class="flex-1">
                       <button class="w-full group-hover:border-orange-500 group-hover:text-orange-600 transition-all duration-300 border-2 border-gray-200 px-4 py-2 rounded-full font-semibold">
                         Learn More
                         <ArrowRight class="w-4 h-4 ml-2 inline-block group-hover:translate-x-1 transition-transform" />
@@ -671,8 +667,8 @@ const testimonials = [
               <p class="text-gray-700 leading-relaxed mb-8 text-lg italic">"{{ testimonial.content }}"</p>
 
               <div class="flex items-center space-x-4">
-                <div class="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-orange-400 to-yellow-400 p-0.5">
-                  <img :src="testimonial.image" :alt="testimonial.name" class="w-full h-full rounded-full object-cover bg-white" />
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center">
+                  <span class="text-white font-bold text-xl">{{ testimonial.initials }}</span>
                 </div>
                 <div>
                   <div class="font-bold text-gray-900 text-lg">{{ testimonial.name }}</div>

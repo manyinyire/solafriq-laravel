@@ -42,39 +42,44 @@ onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
 });
 
-const navItems = [
+// Get solar systems and product categories from shared data
+const solarSystems = computed(() => page.props.solarSystems || []);
+const productCategories = computed(() => page.props.productCategories || []);
+
+const navItems = computed(() => {
+  // Build Solutions menu with dynamic solar systems
+  const solutionsItems = [
+    ...solarSystems.value,
+    { title: "Custom Builder", href: "/custom-builder", description: "Build your perfect solar system" },
+  ];
+
+  // Build Products menu with dynamic categories
+  const productsItems = productCategories.value.length > 0 
+    ? productCategories.value 
+    : [
+        { title: "All Products", href: "/products", description: "Browse all products" },
+      ];
+
+  return [
     {
       title: "Solutions",
-      items: [
-        {
-          title: "Residential Solar",
-          href: "/solutions/residential",
-          description: "Complete solar solutions for homes",
-        },
-        { title: "Commercial Solar", href: "/solutions/commercial", description: "Scalable systems for businesses" },
-        { title: "Custom Builder", href: "/builder", description: "Build your perfect solar system" },
-        { title: "Energy Storage", href: "/solutions/storage", description: "Battery backup solutions" },
-      ],
+      items: solutionsItems,
     },
     {
       title: "Products",
-      items: [
-        { title: "Solar Panels", href: "/products/panels", description: "High-efficiency solar panels" },
-        { title: "Inverters", href: "/products/inverters", description: "Pure sine wave inverters" },
-        { title: "Batteries", href: "/products/batteries", description: "Lithium and lead-acid batteries" },
-        { title: "Accessories", href: "/products/accessories", description: "Mounting and monitoring equipment" },
-      ],
+      items: productsItems,
     },
     {
       title: "Services",
       items: [
-        { title: "Installation", href: "/installation", description: "Professional installation services" },
-        { title: "Maintenance", href: "/support", description: "Ongoing support and maintenance" },
-        { title: "Consultation", href: "/contact", description: "Free solar consultation" },
-        { title: "Financing", href: "/financing", description: "Flexible payment options" },
+        { title: "Installation", href: "/services/installation", description: "Professional installation services" },
+        { title: "Maintenance", href: "/services/maintenance", description: "Ongoing support and maintenance" },
+        { title: "Consultation", href: "/services/consultation", description: "Free solar consultation" },
+        { title: "Financing", href: "/services/financing", description: "Flexible payment options" },
       ],
     },
   ];
+});
 
 </script>
 
@@ -124,7 +129,7 @@ const navItems = [
                   {{ item.title }}
                   <ChevronDown class="h-4 w-4 ml-1" />
                 </button>
-                <div class="absolute top-full left-0 w-[500px] bg-white shadow-lg rounded-lg p-6 hidden group-hover:grid gap-3">
+                <div class="absolute top-full left-0 w-[500px] bg-white shadow-lg rounded-lg p-6 hidden group-hover:grid gap-3 z-50">
                   <Link v-for="subItem in item.items" :key="subItem.title" :href="subItem.href" class="block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors hover:bg-orange-50 hover:text-orange-600 focus:bg-orange-50 focus:text-orange-600">
                     <div class="text-sm font-medium leading-none">{{ subItem.title }}</div>
                     <p class="line-clamp-2 text-sm leading-snug text-gray-500">

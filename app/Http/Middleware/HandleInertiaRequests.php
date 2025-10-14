@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Models\CompanySetting;
 use App\Models\Cart;
+use App\Models\SolarSystem;
+use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
 class HandleInertiaRequests extends Middleware
@@ -42,6 +44,35 @@ class HandleInertiaRequests extends Middleware
         // Get cart data
         $cartData = $this->getCartData($request);
 
+        // Get active solar systems for menu
+        $solarSystems = SolarSystem::active()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'short_description', 'capacity'])
+            ->map(function ($system) {
+                return [
+                    'id' => $system->id,
+                    'title' => $system->name,
+                    'href' => "/systems/{$system->id}",
+                    'description' => $system->short_description ?? "Solar system with {$system->capacity}kW capacity",
+                ];
+            });
+
+        // Get unique product categories for menu
+        $productCategories = Product::active()
+            ->select('category')
+            ->distinct()
+            ->whereNotNull('category')
+            ->orderBy('category')
+            ->pluck('category')
+            ->map(function ($category) {
+                return [
+                    'title' => ucfirst($category),
+                    'href' => "/products/category/{$category}",
+                    'description' => ucfirst($category) . " products",
+                ];
+            });
+
         return array_merge(parent::share($request), [
             'csrf_token' => csrf_token(),
             'auth' => [
@@ -61,6 +92,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'cart' => $cartData,
             'companySettings' => CompanySetting::getPublic(),
+            'solarSystems' => $solarSystems,
+            'productCategories' => $productCategories,
             'features' => [
                 'installment_plans' => env('ENABLE_INSTALLMENT_PLANS', true),
                 'warranty_claims' => env('ENABLE_WARRANTY_CLAIMS', true),

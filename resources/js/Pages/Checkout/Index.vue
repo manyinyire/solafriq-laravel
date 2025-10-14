@@ -17,16 +17,7 @@ const form = ref({
   customer_email: props.customer?.email || '',
   customer_phone: props.customer?.phone || '',
   customer_address: props.customer?.address || '',
-  payment_method: 'card',
-  card_number: '',
-  card_expiry: '',
-  card_cvc: '',
-  cardholder_name: '',
-  is_gift: false,
-  recipient_name: '',
-  recipient_email: '',
-  recipient_phone: '',
-  recipient_address: '',
+  notes: '',
 });
 
 const processing = ref(false);
@@ -48,7 +39,7 @@ const finalTotal = computed(() => {
   return subtotal.value + tax.value + shipping.value;
 });
 
-const submitOrder = () => {
+const requestQuote = () => {
   if (!validateForm()) {
     return;
   }
@@ -56,12 +47,15 @@ const submitOrder = () => {
   processing.value = true;
   errors.value = {};
 
-  const orderData = {
-    ...form.value,
-    total: finalTotal.value,
+  const quoteData = {
+    customer_name: form.value.customer_name,
+    customer_email: form.value.customer_email,
+    customer_phone: form.value.customer_phone,
+    customer_address: form.value.customer_address,
+    notes: form.value.notes,
   };
 
-  router.post('/checkout/process', orderData, {
+  router.post('/checkout/request-quote', quoteData, {
     onSuccess: (response) => {
       processing.value = false;
       // Redirect will be handled by the server
@@ -97,38 +91,6 @@ const validateForm = () => {
     newErrors.customer_address = 'Address is required';
   }
 
-  if (form.value.is_gift) {
-    if (!form.value.recipient_name.trim()) {
-      newErrors.recipient_name = 'Recipient\'s name is required';
-    }
-    if (!form.value.recipient_email.trim()) {
-      newErrors.recipient_email = 'Recipient\'s email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.recipient_email)) {
-      newErrors.recipient_email = 'Please enter a valid email address';
-    }
-    if (!form.value.recipient_phone.trim()) {
-      newErrors.recipient_phone = 'Recipient\'s phone number is required';
-    }
-    if (!form.value.recipient_address.trim()) {
-      newErrors.recipient_address = 'Recipient\'s address is required';
-    }
-  }
-
-  if (form.value.payment_method === 'card') {
-    if (!form.value.card_number.trim()) {
-      newErrors.card_number = 'Card number is required';
-    }
-    if (!form.value.card_expiry.trim()) {
-      newErrors.card_expiry = 'Expiry date is required';
-    }
-    if (!form.value.card_cvc.trim()) {
-      newErrors.card_cvc = 'CVC is required';
-    }
-    if (!form.value.cardholder_name.trim()) {
-      newErrors.cardholder_name = 'Cardholder name is required';
-    }
-  }
-
   errors.value = newErrors;
   return Object.keys(newErrors).length === 0;
 };
@@ -148,10 +110,10 @@ const goBack = () => {
             <div>
               <h1 class="text-3xl font-bold text-gray-900 flex items-center">
                 <CreditCard class="w-8 h-8 mr-3 text-orange-500" />
-                Checkout
+                Request Quote
               </h1>
               <p class="text-gray-600 mt-2">
-                Complete your order for {{ itemCount }} item{{ itemCount !== 1 ? 's' : '' }}
+                Submit your quote request for {{ itemCount }} item{{ itemCount !== 1 ? 's' : '' }}. We'll review and send you a detailed quote.
               </p>
             </div>
             <button @click="goBack"
@@ -302,6 +264,21 @@ const goBack = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- Additional Notes -->
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+              <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <CreditCard class="w-5 h-5 mr-2 text-orange-500" />
+                Additional Notes
+              </h2>
+
+              <textarea
+                v-model="form.notes"
+                rows="5"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                placeholder="Enter any additional notes or comments"
+              ></textarea>
             </div>
 
             <!-- Payment Information -->
@@ -481,12 +458,12 @@ const goBack = () => {
                 <div v-for="item in cartItems" :key="item.id" class="flex items-center space-x-3">
                   <div
                     class="w-12 h-12 bg-gradient-to-br rounded-lg flex items-center justify-center flex-shrink-0"
-                    :style="{ background: item.solar_system.gradient_colors || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }"
+                    :style="{ background: (item.solar_system?.gradient_colors || item.product?.gradient_colors) || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }"
                   >
                     <Zap class="w-4 h-4 text-white opacity-80" />
                   </div>
                   <div class="flex-1 min-w-0">
-                    <h4 class="font-medium text-gray-900 text-sm truncate">{{ item.solar_system.name }}</h4>
+                    <h4 class="font-medium text-gray-900 text-sm truncate">{{ item.item_name || item.solar_system?.name || item.product?.name || 'Item' }}</h4>
                     <p class="text-gray-600 text-xs">Qty: {{ item.quantity }}</p>
                   </div>
                   <span class="font-medium text-gray-900 text-sm">
@@ -529,14 +506,14 @@ const goBack = () => {
                 </div>
               </div>
 
-              <!-- Place Order Button -->
-              <button @click="submitOrder"
+              <!-- Request Quote Button -->
+              <button @click="requestQuote"
                       :disabled="processing"
                       class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none disabled:cursor-not-allowed">
-                <span v-if="processing">Processing Order...</span>
+                <span v-if="processing">Submitting Request...</span>
                 <span v-else class="flex items-center justify-center">
                   <CheckCircle class="w-5 h-5 mr-2" />
-                  Place Order
+                  Request Quote
                 </span>
               </button>
 

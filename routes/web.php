@@ -43,6 +43,23 @@ Route::get('/services', function () {
     return Inertia::render('Services');
 })->name('services');
 
+// Service Pages
+Route::get('/services/installation', function () {
+    return Inertia::render('Services/Installation');
+})->name('services.installation');
+
+Route::get('/services/maintenance', function () {
+    return Inertia::render('Services/Maintenance');
+})->name('services.maintenance');
+
+Route::get('/services/consultation', function () {
+    return Inertia::render('Services/Consultation');
+})->name('services.consultation');
+
+Route::get('/services/financing', function () {
+    return Inertia::render('Services/Financing');
+})->name('services.financing');
+
 // Solar System Routes
 Route::get('/systems', [App\Http\Controllers\SolarSystemController::class, 'index'])->name('systems.index');
 Route::get('/systems/{id}', [App\Http\Controllers\SolarSystemController::class, 'show'])->name('systems.show');
@@ -54,10 +71,9 @@ Route::patch('/cart/items/{cartItem}', [App\Http\Controllers\CartController::cla
 Route::delete('/cart/items/{cartItem}', [App\Http\Controllers\CartController::class, 'remove'])->name('cart.remove');
 Route::delete('/cart/clear', [App\Http\Controllers\CartController::class, 'clear'])->name('cart.clear');
 
-// Checkout Routes
+// Checkout Routes (now for quote requests)
 Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
-Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout.process');
-Route::get('/checkout/success/{order}', [App\Http\Controllers\CheckoutController::class, 'success'])->name('checkout.success');
+Route::post('/checkout/request-quote', [App\Http\Controllers\QuoteController::class, 'requestQuote'])->name('checkout.request-quote');
 
 // Authentication Routes
 Route::get('/login', function () {
@@ -91,7 +107,20 @@ Route::get('custom-builder/products', [App\Http\Controllers\Api\V1\CustomBuilder
 Route::post('custom-builder/calculate', [App\Http\Controllers\Api\V1\CustomBuilderController::class, 'calculate']);
 Route::post('custom-builder/validate', [App\Http\Controllers\Api\V1\CustomBuilderController::class, 'validateSystem']);
 Route::post('custom-builder/add-to-cart', [App\Http\Controllers\Api\V1\CustomBuilderController::class, 'addToCart']);
-Route::get('products/category/{category}', [App\Http\Controllers\Admin\ProductController::class, 'byCategory']);
+
+// Public Products Routes
+Route::get('products/category/{category}', function ($category) {
+    $products = App\Models\Product::active()
+        ->where('category', $category)
+        ->orderBy('sort_order')
+        ->orderBy('name')
+        ->get();
+    
+    return Inertia::render('Products/Category', [
+        'category' => $category,
+        'products' => $products,
+    ]);
+})->name('products.category');
 
 Route::middleware([
     'auth', 'verified'
@@ -137,6 +166,11 @@ Route::middleware([
     Route::get('/support', function () {
         return Inertia::render('Client/Support');
     })->name('client.support');
+
+    // Quote Routes
+    Route::get('/quotes/{id}', [App\Http\Controllers\QuoteController::class, 'show'])->name('quotes.show');
+    Route::post('/quotes/{id}/accept', [App\Http\Controllers\QuoteController::class, 'accept'])->name('quotes.accept');
+    Route::post('/quotes/{id}/reject', [App\Http\Controllers\QuoteController::class, 'reject'])->name('quotes.reject');
 
     Route::get('/profile', function () {
         return Inertia::render('Profile/Show');
@@ -255,6 +289,15 @@ Route::middleware([
         })->name('admin.installations');
 
         Route::get('/installations-data', [\App\Http\Controllers\Api\V1\OrderController::class, 'scheduledInstallations'])->name('admin.installations.data');
+
+        // Quote Management Routes
+        Route::get('/quotes', [App\Http\Controllers\Admin\QuoteController::class, 'index'])->name('admin.quotes');
+        Route::get('/quotes/{id}', [App\Http\Controllers\Admin\QuoteController::class, 'show'])->name('admin.quotes.show');
+        Route::put('/quotes/{id}', [App\Http\Controllers\Admin\QuoteController::class, 'update'])->name('admin.quotes.update');
+        Route::put('/quotes/{id}/items', [App\Http\Controllers\Admin\QuoteController::class, 'updateItems'])->name('admin.quotes.update-items');
+        Route::post('/quotes/{id}/send', [App\Http\Controllers\Admin\QuoteController::class, 'send'])->name('admin.quotes.send');
+        Route::get('/quotes/{id}/pdf', [App\Http\Controllers\Admin\QuoteController::class, 'downloadPDF'])->name('admin.quotes.pdf');
+        Route::delete('/quotes/{id}', [App\Http\Controllers\Admin\QuoteController::class, 'destroy'])->name('admin.quotes.destroy');
     });
 });
 

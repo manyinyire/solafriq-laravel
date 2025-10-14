@@ -135,7 +135,7 @@ const continueShopping = () => {
                     <div class="flex-shrink-0">
                       <div
                         class="w-24 h-24 bg-gradient-to-br rounded-xl flex items-center justify-center"
-                        :style="{ background: item.solar_system.gradient_colors || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }"
+                        :style="{ background: (item.solar_system?.gradient_colors || item.product?.gradient_colors) || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }"
                       >
                         <Zap class="w-8 h-8 text-white opacity-80" />
                       </div>
@@ -146,9 +146,9 @@ const continueShopping = () => {
                       <div class="flex justify-between items-start">
                         <div>
                           <h3 class="text-lg font-semibold text-gray-900 mb-1">
-                            {{ item.solar_system.name }}
+                            {{ item.item_name || item.solar_system?.name || item.product?.name || 'Item' }}
                           </h3>
-                          <div class="flex items-center space-x-4 text-sm text-gray-600 mb-3">
+                          <div v-if="item.solar_system" class="flex items-center space-x-4 text-sm text-gray-600 mb-3">
                             <div class="flex items-center">
                               <Zap class="w-4 h-4 mr-1 text-orange-500" />
                               {{ item.solar_system.capacity }}kW
@@ -158,8 +158,18 @@ const continueShopping = () => {
                               25yr Warranty
                             </div>
                           </div>
-                          <p class="text-gray-600 text-sm">
-                            {{ item.solar_system.short_description }}
+                          <div v-else-if="item.product" class="flex items-center space-x-4 text-sm text-gray-600 mb-3">
+                            <div v-if="item.product.power_rating" class="flex items-center">
+                              <Zap class="w-4 h-4 mr-1 text-orange-500" />
+                              {{ item.product.power_rating }}W
+                            </div>
+                            <div v-if="item.product.brand" class="flex items-center">
+                              <Shield class="w-4 h-4 mr-1 text-green-500" />
+                              {{ item.product.brand }}
+                            </div>
+                          </div>
+                          <p v-if="item.solar_system?.short_description || item.product?.description" class="text-gray-600 text-sm">
+                            {{ item.solar_system?.short_description || item.product?.description }}
                           </p>
                         </div>
                         <button @click="removeItem(item.id)"
