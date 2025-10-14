@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Notifications\WelcomeNotification;
+use App\Notifications\NewUserRegisteredNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -45,13 +48,19 @@ class AuthController extends Controller
 
         event(new Registered($user));
 
-        // Send welcome email
+        // Send welcome notification to user
         try {
-            $emailService = new EmailNotificationService();
-            $emailService->sendWelcomeEmail($user);
+            $user->notify(new WelcomeNotification());
         } catch (\Exception $e) {
-            // Log but don't fail registration
-            \Log::warning('Failed to send welcome email: ' . $e->getMessage());
+            \Log::warning('Failed to send welcome notification: ' . $e->getMessage());
+        }
+
+        // Notify admins about new user registration
+        try {
+            $admins = User::where('role', 'ADMIN')->get();
+            Notification::send($admins, new NewUserRegisteredNotification($user));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send admin notification: ' . $e->getMessage());
         }
 
         // Create API token

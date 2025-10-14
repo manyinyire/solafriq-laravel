@@ -13,9 +13,12 @@ class CompanySetting extends Model
 
     protected $fillable = [
         'key',
+        'group',
+        'display_name',
         'value',
         'type',
         'description',
+        'order',
         'is_public',
     ];
 
@@ -63,8 +66,16 @@ class CompanySetting extends Model
     /**
      * Set a setting value by key
      */
-    public static function set(string $key, $value, string $type = 'string', bool $isPublic = false, string $description = null)
-    {
+    public static function set(
+        string $key, 
+        $value, 
+        string $type = 'string', 
+        bool $isPublic = false, 
+        string $description = null,
+        string $group = null,
+        string $displayName = null,
+        int $order = 0
+    ) {
         $setting = static::updateOrCreate(
             ['key' => $key],
             [
@@ -72,6 +83,9 @@ class CompanySetting extends Model
                 'type' => $type,
                 'is_public' => $isPublic,
                 'description' => $description,
+                'group' => $group,
+                'display_name' => $displayName,
+                'order' => $order,
             ]
         );
 
@@ -184,64 +198,94 @@ class CompanySetting extends Model
     {
         $defaults = [
             'company_name' => [
+                'group' => 'Company',
+                'display_name' => 'Company Name',
                 'value' => 'SolaFriq',
                 'type' => 'string',
                 'description' => 'Company name displayed throughout the application',
                 'is_public' => true,
+                'order' => 1,
             ],
             'company_email' => [
+                'group' => 'Company',
+                'display_name' => 'Company Email',
                 'value' => 'info@solafriq.com',
                 'type' => 'string',
                 'description' => 'Primary company email address',
                 'is_public' => true,
+                'order' => 2,
             ],
             'company_phone' => [
+                'group' => 'Company',
+                'display_name' => 'Company Phone',
                 'value' => '+1-XXX-XXX-XXXX',
                 'type' => 'string',
                 'description' => 'Company phone number',
                 'is_public' => true,
+                'order' => 3,
             ],
             'company_address' => [
+                'group' => 'Company',
+                'display_name' => 'Company Address',
                 'value' => 'New York, USA',
                 'type' => 'text',
                 'description' => 'Company physical address',
                 'is_public' => true,
+                'order' => 4,
             ],
             'company_logo' => [
+                'group' => 'Company',
+                'display_name' => 'Company Logo',
                 'value' => '/images/solafriq-logo.svg',
                 'type' => 'file',
                 'description' => 'Company logo image',
                 'is_public' => true,
+                'order' => 5,
             ],
             'default_currency' => [
+                'group' => 'Financial',
+                'display_name' => 'Default Currency',
                 'value' => 'USD',
                 'type' => 'string',
                 'description' => 'Default currency for pricing and transactions',
                 'is_public' => true,
+                'order' => 10,
             ],
             'currency_symbol' => [
+                'group' => 'Financial',
+                'display_name' => 'Currency Symbol',
                 'value' => '$',
                 'type' => 'string',
                 'description' => 'Currency symbol to display',
                 'is_public' => true,
+                'order' => 11,
             ],
             'tax_rate' => [
+                'group' => 'Financial',
+                'display_name' => 'Tax Rate (%)',
                 'value' => '8.25',
                 'type' => 'float',
                 'description' => 'Default tax rate percentage',
                 'is_public' => false,
+                'order' => 12,
             ],
             'installation_fee' => [
+                'group' => 'Financial',
+                'display_name' => 'Installation Fee',
                 'value' => '500',
                 'type' => 'float',
                 'description' => 'Default installation fee in base currency',
                 'is_public' => false,
+                'order' => 13,
             ],
             'warranty_period_months' => [
+                'group' => 'Product',
+                'display_name' => 'Warranty Period (Months)',
                 'value' => '24',
                 'type' => 'integer',
                 'description' => 'Default warranty period in months',
                 'is_public' => true,
+                'order' => 20,
             ],
         ];
 

@@ -64,6 +64,31 @@ class InvoiceGeneratorService
     {
         $order = $invoice->order;
         
+        // Get company settings
+        $companyName = setting('company_name', 'SolaFriq');
+        $companyEmail = setting('company_email', 'info@solafriq.com');
+        $companyPhone = setting('company_phone', '+1-XXX-XXX-XXXX');
+        $companyAddress = setting('company_address', 'New York, USA');
+        $companyLogo = setting('company_logo', '/images/solafriq-logo.svg');
+        
+        // Convert logo to base64 for PDF compatibility
+        $logoData = '';
+        if (!str_starts_with($companyLogo, 'http')) {
+            // It's a relative path
+            $publicPath = public_path($companyLogo);
+            if (file_exists($publicPath)) {
+                $imageData = file_get_contents($publicPath);
+                $imageType = mime_content_type($publicPath);
+                $logoData = 'data:' . $imageType . ';base64,' . base64_encode($imageData);
+            } else {
+                // Fallback to URL
+                $logoData = url($companyLogo);
+            }
+        } else {
+            // It's already a full URL
+            $logoData = $companyLogo;
+        }
+        
         return "
         <!DOCTYPE html>
         <html>
@@ -72,6 +97,7 @@ class InvoiceGeneratorService
             <style>
                 body { font-family: Arial, sans-serif; margin: 20px; }
                 .header { text-align: center; margin-bottom: 30px; }
+                .company-logo { max-height: 60px; margin-bottom: 10px; }
                 .company-name { font-size: 24px; font-weight: bold; color: #f97316; }
                 .invoice-details { margin: 20px 0; }
                 .customer-details { background: #f8f9fa; padding: 15px; margin: 20px 0; }
@@ -84,9 +110,11 @@ class InvoiceGeneratorService
         </head>
         <body>
             <div class='header'>
-                <div class='company-name'>SolaFriq</div>
+                <img src='{$logoData}' alt='{$companyName}' class='company-logo' onerror=\"this.style.display='none'\" />
+                <div class='company-name'>{$companyName}</div>
                 <div>Premium Solar Solutions</div>
-                <div>New York, USA | info@solafriq.com</div>
+                <div>{$companyAddress} | {$companyEmail}</div>
+                <div>{$companyPhone}</div>
             </div>
             
             <div class='invoice-details'>
@@ -138,8 +166,8 @@ class InvoiceGeneratorService
             </div>
             
             <div style='margin-top: 40px; font-size: 12px; color: #666;'>
-                <p>Thank you for choosing SolaFriq for your solar energy needs!</p>
-                <p>For support, contact us at support@solafriq.com or +1-800-555-0123</p>
+                <p>Thank you for choosing {$companyName} for your solar energy needs!</p>
+                <p>For support, contact us at {$companyEmail} or {$companyPhone}</p>
             </div>
         </body>
         </html>";

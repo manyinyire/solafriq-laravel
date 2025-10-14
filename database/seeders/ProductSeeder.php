@@ -17,7 +17,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Monocrystalline Solar Panel',
                 'description' => 'High-efficiency monocrystalline solar panel with 21% efficiency rating. Perfect for residential installations.',
-                'category' => 'panel',
+                'category' => 'SOLAR_PANEL',
                 'brand' => 'SunPower',
                 'model' => 'SPR-X22-370',
                 'price' => 350.00,
@@ -30,7 +30,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Polycrystalline Solar Panel',
                 'description' => 'Cost-effective polycrystalline panel with good performance in various weather conditions.',
-                'category' => 'panel',
+                'category' => 'SOLAR_PANEL',
                 'brand' => 'Canadian Solar',
                 'model' => 'CS3W-400P',
                 'price' => 280.00,
@@ -43,7 +43,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Bifacial Solar Panel',
                 'description' => 'Advanced bifacial technology captures sunlight from both sides for maximum energy production.',
-                'category' => 'panel',
+                'category' => 'SOLAR_PANEL',
                 'brand' => 'LONGi',
                 'model' => 'LR4-72HBD-450M',
                 'price' => 420.00,
@@ -58,7 +58,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'String Inverter',
                 'description' => 'Reliable string inverter for residential solar systems with 97.5% efficiency.',
-                'category' => 'inverter',
+                'category' => 'INVERTER',
                 'brand' => 'SMA',
                 'model' => 'Sunny Boy 5.0',
                 'price' => 1200.00,
@@ -71,7 +71,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Hybrid Inverter',
                 'description' => 'Advanced hybrid inverter with battery storage capability and smart grid integration.',
-                'category' => 'inverter',
+                'category' => 'INVERTER',
                 'brand' => 'Fronius',
                 'model' => 'Primo GEN24 6.0',
                 'price' => 1800.00,
@@ -84,7 +84,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Microinverter',
                 'description' => 'Panel-level optimization with microinverter technology for maximum energy harvest.',
-                'category' => 'inverter',
+                'category' => 'INVERTER',
                 'brand' => 'Enphase',
                 'model' => 'IQ7+',
                 'price' => 180.00,
@@ -99,7 +99,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Lithium Battery Storage',
                 'description' => 'High-capacity lithium-ion battery for home energy storage with 10-year warranty.',
-                'category' => 'battery',
+                'category' => 'BATTERY',
                 'brand' => 'Tesla',
                 'model' => 'Powerwall 2',
                 'price' => 7500.00,
@@ -112,7 +112,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'LFP Battery System',
                 'description' => 'Safe and long-lasting LiFePO4 battery system with excellent cycle life.',
-                'category' => 'battery',
+                'category' => 'BATTERY',
                 'brand' => 'BYD',
                 'model' => 'Battery-Box Premium HVS 10.2',
                 'price' => 6200.00,
@@ -127,7 +127,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Roof Mounting Kit',
                 'description' => 'Complete aluminum mounting system for pitched roofs. Includes rails, clamps, and hardware.',
-                'category' => 'mounting',
+                'category' => 'MOUNTING',
                 'brand' => 'IronRidge',
                 'model' => 'XR100',
                 'price' => 450.00,
@@ -139,7 +139,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Ground Mount System',
                 'description' => 'Heavy-duty ground mounting structure for large-scale installations.',
-                'category' => 'mounting',
+                'category' => 'MOUNTING',
                 'brand' => 'Unirac',
                 'model' => 'RM10',
                 'price' => 850.00,
@@ -153,7 +153,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Solar Cable Kit',
                 'description' => 'UV-resistant solar cable with MC4 connectors. 50 meters per roll.',
-                'category' => 'accessory',
+                'category' => 'ACCESSORIES',
                 'brand' => 'Amphenol',
                 'model' => 'H1Z2Z2-K 4mm²',
                 'price' => 120.00,
@@ -165,7 +165,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'DC Combiner Box',
                 'description' => 'Weather-resistant DC combiner box with surge protection and fuses.',
-                'category' => 'accessory',
+                'category' => 'ACCESSORIES',
                 'brand' => 'Schneider Electric',
                 'model' => 'PVSCB-6',
                 'price' => 280.00,
@@ -177,7 +177,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Monitoring System',
                 'description' => 'Smart monitoring system with mobile app for real-time energy tracking.',
-                'category' => 'accessory',
+                'category' => 'ACCESSORIES',
                 'brand' => 'SolarEdge',
                 'model' => 'SE-MTR240-0-000',
                 'price' => 350.00,

@@ -108,19 +108,12 @@ const navItems = [
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
-          <Link href="/" class="flex items-center space-x-3 group">
-            <div class="relative">
-              <div class="h-10 w-10 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-orange-300/50 transition-all duration-300 group-hover:scale-105">
-                <Sun class="h-6 w-6 text-white" />
-              </div>
-              <div class="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
-            </div>
-            <div>
-              <span class="font-bold text-xl bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent">
-                {{ companySettings.company_name || 'SolaFriq' }}
-              </span>
-              <div class="text-xs text-gray-500 -mt-1">Solar Solutions</div>
-            </div>
+          <Link href="/" class="flex items-center group">
+            <img 
+              :src="companySettings.company_logo || '/images/solafriq-logo.svg'" 
+              :alt="companySettings.company_name || 'SolaFriq'"
+              class="h-12 w-auto object-contain transition-all duration-300 group-hover:scale-105"
+            />
           </Link>
 
           <!-- Desktop Navigation -->

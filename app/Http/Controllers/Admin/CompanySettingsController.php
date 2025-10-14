@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CompanySetting;
+use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,13 @@ use Illuminate\Support\Facades\Cache;
 
 class CompanySettingsController extends Controller
 {
+    protected $imageService;
+
+    public function __construct(ImageOptimizationService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
     /**
      * Display all company settings
      */
@@ -64,35 +72,50 @@ class CompanySettingsController extends Controller
 
             foreach ($request->all() as $key => $value) {
                 if ($key === 'company_logo' && $request->hasFile('company_logo')) {
-                    // Handle file upload
+                    // Handle file upload with optimization
                     $file = $request->file('company_logo');
 
                     // Delete old logo if it exists
                     $oldLogo = CompanySetting::where('key', 'company_logo')->first();
                     if ($oldLogo && $oldLogo->value && !str_contains($oldLogo->value, '/images/solafriq-logo')) {
-                        // Handle both storage and public paths
-                        if (str_starts_with($oldLogo->value, '/storage/')) {
-                            $oldPath = str_replace('/storage/', '', $oldLogo->value);
-                            if (Storage::disk('public')->exists($oldPath)) {
-                                Storage::disk('public')->delete($oldPath);
-                            }
-                        } elseif (str_starts_with($oldLogo->value, '/uploads/')) {
-                            $oldPath = public_path($oldLogo->value);
-                            if (file_exists($oldPath)) {
-                                unlink($oldPath);
-                            }
-                        }
+                        $this->imageService->deleteImage($oldLogo->value);
                     }
 
-                    $setting = CompanySetting::set($key, $file, 'file', true, 'Company logo image');
-                    $updated[$key] = CompanySetting::castValue($setting->value, $setting->type);
+                    // Upload and optimize logo
+                    $logoPath = $this->imageService->uploadLogo($file);
+                    
+                    if ($logoPath) {
+                        $setting = CompanySetting::set(
+                            $key, 
+                            $logoPath, 
+                            'file', 
+                            true, 
+                            'Company logo image',
+                            'Company',
+                            'Company Logo',
+                            5
+                        );
+                        $updated[$key] = CompanySetting::castValue($setting->value, $setting->type);
+                    }
                 } elseif ($key !== 'company_logo') {
                     // Handle other settings
                     $type = $this->getSettingType($key);
                     $isPublic = $this->isPublicSetting($key);
                     $description = $this->getSettingDescription($key);
+                    $group = $this->getSettingGroup($key);
+                    $displayName = $this->getSettingDisplayName($key);
+                    $order = $this->getSettingOrder($key);
 
-                    $setting = CompanySetting::set($key, $value, $type, $isPublic, $description);
+                    $setting = CompanySetting::set(
+                        $key, 
+                        $value, 
+                        $type, 
+                        $isPublic, 
+                        $description,
+                        $group,
+                        $displayName,
+                        $order
+                    );
                     $updated[$key] = CompanySetting::castValue($setting->value, $setting->type);
                 }
             }
@@ -312,5 +335,68 @@ class CompanySettingsController extends Controller
         ];
 
         return $descriptions[$key] ?? '';
+    }
+
+    /**
+     * Get setting group
+     */
+    private function getSettingGroup(string $key): string
+    {
+        $groups = [
+            'company_name' => 'Company',
+            'company_email' => 'Company',
+            'company_phone' => 'Company',
+            'company_address' => 'Company',
+            'company_logo' => 'Company',
+            'default_currency' => 'Financial',
+            'currency_symbol' => 'Financial',
+            'tax_rate' => 'Financial',
+            'installation_fee' => 'Financial',
+            'warranty_period_months' => 'Product',
+        ];
+
+        return $groups[$key] ?? 'General';
+    }
+
+    /**
+     * Get setting display name
+     */
+    private function getSettingDisplayName(string $key): string
+    {
+        $displayNames = [
+            'company_name' => 'Company Name',
+            'company_email' => 'Company Email',
+            'company_phone' => 'Company Phone',
+            'company_address' => 'Company Address',
+            'company_logo' => 'Company Logo',
+            'default_currency' => 'Default Currency',
+            'currency_symbol' => 'Currency Symbol',
+            'tax_rate' => 'Tax Rate (%)',
+            'installation_fee' => 'Installation Fee',
+            'warranty_period_months' => 'Warranty Period (Months)',
+        ];
+
+        return $displayNames[$key] ?? ucwords(str_replace('_', ' ', $key));
+    }
+
+    /**
+     * Get setting order
+     */
+    private function getSettingOrder(string $key): int
+    {
+        $orders = [
+            'company_name' => 1,
+            'company_email' => 2,
+            'company_phone' => 3,
+            'company_address' => 4,
+            'company_logo' => 5,
+            'default_currency' => 10,
+            'currency_symbol' => 11,
+            'tax_rate' => 12,
+            'installation_fee' => 13,
+            'warranty_period_months' => 20,
+        ];
+
+        return $orders[$key] ?? 999;
     }
 }
