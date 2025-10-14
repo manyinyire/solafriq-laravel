@@ -4,12 +4,21 @@ namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Support\Str;
 use Exception;
 
 class ImageOptimizationService
 {
+    protected ImageManager $manager;
+
+    public function __construct()
+    {
+        // Initialize ImageManager with GD driver
+        $this->manager = new ImageManager(new Driver());
+    }
+
     /**
      * Upload and optimize an image
      *
@@ -37,24 +46,23 @@ class ImageOptimizationService
             $filename = time() . '_' . Str::random(10) . '.webp';
             
             // Process and optimize the image
-            $image = Image::make($file)
-                ->encode('webp', $quality);
+            $image = $this->manager->read($file->getPathname());
             
             // Resize if dimensions are specified
             if ($maxWidth || $maxHeight) {
-                $image->resize($maxWidth, $maxHeight, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize(); // Prevent upsizing
-                });
+                $image->scale(width: $maxWidth, height: $maxHeight);
             }
+            
+            // Encode to WebP
+            $encodedImage = $image->toWebp($quality);
             
             // Store based on disk type
             if ($storageDisk === 's3') {
-                Storage::disk('s3')->put($path . $filename, (string) $image->encode());
+                Storage::disk('s3')->put($path . $filename, (string) $encodedImage);
                 return $path . $filename;
             } else {
-                // Store locally in public disk
-                $fullPath = storage_path('app/public/' . $path);
+                // Store directly in public/storage for shared hosting compatibility
+                $fullPath = public_path('storage/' . $path);
                 
                 // Create directory if it doesn't exist
                 if (!file_exists($fullPath)) {
@@ -62,7 +70,7 @@ class ImageOptimizationService
                 }
                 
                 // Save the image
-                $image->save($fullPath . $filename);
+                $encodedImage->save($fullPath . $filename);
                 
                 // Return the public path
                 return $path . $filename;
@@ -145,15 +153,14 @@ class ImageOptimizationService
                 // Handle both storage and public paths
                 if (str_starts_with($path, '/storage/')) {
                     $path = str_replace('/storage/', '', $path);
-                } elseif (str_starts_with($path, '/uploads/')) {
-                    $fullPath = public_path($path);
-                    if (file_exists($fullPath)) {
-                        return unlink($fullPath);
-                    }
-                    return false;
                 }
                 
-                return Storage::disk('public')->delete($path);
+                $fullPath = public_path('storage/' . $path);
+                if (file_exists($fullPath)) {
+                    return unlink($fullPath);
+                }
+                
+                return false;
             }
         } catch (Exception $e) {
             \Log::error('Image deletion failed', [
@@ -178,17 +185,17 @@ class ImageOptimizationService
         try {
             $storageDisk = $this->getDisk();
             
-            // Get the source image
+            // Get the source image path
             if ($storageDisk === 's3') {
-                $imageContent = Storage::disk('s3')->get($sourcePath);
+                $imagePath = Storage::disk('s3')->path($sourcePath);
             } else {
-                $imageContent = Storage::disk('public')->get($sourcePath);
+                $imagePath = public_path('storage/' . $sourcePath);
             }
             
             // Create thumbnail
-            $thumbnail = Image::make($imageContent)
-                ->fit($width, $height)
-                ->encode('webp', 85);
+            $thumbnail = $this->manager->read($imagePath);
+            $thumbnail->cover($width, $height);
+            $encodedThumbnail = $thumbnail->toWebp(85);
             
             // Generate thumbnail path
             $pathInfo = pathinfo($sourcePath);
@@ -196,13 +203,13 @@ class ImageOptimizationService
             
             // Store thumbnail
             if ($storageDisk === 's3') {
-                Storage::disk('s3')->put($thumbnailPath, (string) $thumbnail->encode());
+                Storage::disk('s3')->put($thumbnailPath, (string) $encodedThumbnail);
             } else {
-                $fullPath = storage_path('app/public/' . $pathInfo['dirname']);
+                $fullPath = public_path('storage/' . $pathInfo['dirname']);
                 if (!file_exists($fullPath)) {
                     mkdir($fullPath, 0755, true);
                 }
-                $thumbnail->save(storage_path('app/public/' . $thumbnailPath));
+                $encodedThumbnail->save(public_path('storage/' . $thumbnailPath));
             }
             
             return $thumbnailPath;

@@ -159,9 +159,9 @@ const filteredOrders = computed(() => {
             <p class="text-gray-600 mt-1">Track and manage your solar system orders</p>
           </div>
           <div class="flex items-center space-x-3">
-            <Link href="/packages" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            <a href="/" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
               Browse Systems
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -348,12 +348,12 @@ const filteredOrders = computed(() => {
           >
             Clear Filters
           </button>
-          <Link
-            href="/packages"
+          <a
+            href="/"
             class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
           >
             Browse Systems
-          </Link>
+          </a>
         </div>
       </div>
     </div>

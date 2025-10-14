@@ -132,6 +132,12 @@ Route::middleware([
         return Inertia::render('Client/Warranties');
     })->name('client.warranties');
 
+    Route::get('/warranties-data', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'index'])->name('client.warranties.data');
+
+    Route::get('/support', function () {
+        return Inertia::render('Client/Support');
+    })->name('client.support');
+
     Route::get('/profile', function () {
         return Inertia::render('Profile/Show');
     })->name('profile.show');
@@ -147,6 +153,7 @@ Route::middleware([
     // Warranties
     Route::get('warranties', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'index']);
     Route::get('warranties/{warranty}', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'show']);
+    Route::get('warranties/{warranty}/certificate', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'downloadCertificate']);
     Route::post('warranties/{warranty}/claims', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'createClaim']);
     Route::get('warranty-claims', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'claims']);
 
@@ -235,6 +242,13 @@ Route::middleware([
         Route::get('/warranties', function () {
             return Inertia::render('Admin/Warranties');
         })->name('admin.warranties');
+
+        // Admin Warranty Routes
+        Route::get('/warranties-data', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'adminIndex'])->name('admin.warranties.data');
+        Route::get('/warranties/statistics', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'statistics'])->name('admin.warranties.statistics');
+        Route::get('/warranties/eligible-orders', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'eligibleOrders'])->name('admin.warranties.eligible-orders');
+        Route::post('/warranties/create-for-order/{order}', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'createForOrder'])->name('admin.warranties.create-for-order');
+        Route::put('/warranty-claims/{warrantyClaim}', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'updateClaim'])->name('admin.warranty-claims.update');
 
         Route::get('/installations', function () {
             return Inertia::render('Admin/ScheduledInstallations');

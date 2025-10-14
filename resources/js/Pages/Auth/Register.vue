@@ -48,8 +48,16 @@
         <div class="max-w-md w-full space-y-8">
           <!-- Logo and header -->
           <div class="text-center">
-            <div class="mx-auto h-16 w-16 bg-green-600 rounded-xl flex items-center justify-center mb-6 shadow-lg">
-              <Sun class="h-8 w-8 text-yellow-300" />
+            <div class="mx-auto mb-6 flex items-center justify-center">
+              <img 
+                v-if="companySettings.company_logo" 
+                :src="companySettings.company_logo" 
+                :alt="companySettings.company_name || 'SolaFriq'"
+                class="h-16 w-auto object-contain"
+              />
+              <div v-else class="h-16 w-16 bg-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Sun class="h-8 w-8 text-yellow-300" />
+              </div>
             </div>
             <h2 class="text-3xl font-bold text-gray-900">Create Account</h2>
             <p class="mt-2 text-gray-600">Join {{ companySettings.company_name || 'SolaFriq' }} for solar energy management</p>

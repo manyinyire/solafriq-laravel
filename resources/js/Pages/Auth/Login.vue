@@ -48,8 +48,16 @@
         <div class="max-w-md w-full space-y-8">
           <!-- Logo and header -->
           <div class="text-center">
-            <div class="mx-auto h-16 w-16 bg-blue-600 rounded-xl flex items-center justify-center mb-6 shadow-lg">
-              <Sun class="h-8 w-8 text-yellow-300" />
+            <div class="mx-auto mb-6 flex items-center justify-center">
+              <img 
+                v-if="companySettings.company_logo" 
+                :src="companySettings.company_logo" 
+                :alt="companySettings.company_name || 'SolaFriq'"
+                class="h-16 w-auto object-contain"
+              />
+              <div v-else class="h-16 w-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Sun class="h-8 w-8 text-yellow-300" />
+              </div>
             </div>
             <h2 class="text-3xl font-bold text-gray-900">Sign in to {{ companySettings.company_name || 'SolaFriq' }}</h2>
             <p class="mt-2 text-gray-600">Access your solar energy dashboard</p>
@@ -159,15 +167,6 @@
                 </p>
               </div>
             </form>
-          </div>
-
-          <!-- Demo credentials -->
-          <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 class="text-sm font-medium text-blue-800 mb-2">Demo Credentials</h3>
-            <div class="text-xs text-blue-800 space-y-1 font-medium">
-              <p><span class="font-medium">Admin:</span> {{ companySettings.company_email || 'admin@solafriq.com' }} / password</p>
-              <p><span class="font-medium">Client:</span> john@example.com / password</p>
-            </div>
           </div>
         </div>
       </div>

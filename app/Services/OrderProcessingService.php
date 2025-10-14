@@ -18,7 +18,8 @@ class OrderProcessingService
 {
     public function __construct(
         private InvoiceGeneratorService $invoiceService,
-        private EmailNotificationService $emailService
+        private EmailNotificationService $emailService,
+        private WarrantyService $warrantyService
     ) {}
 
     /**
@@ -299,8 +300,14 @@ class OrderProcessingService
      */
     private function createWarranties(Order $order): void
     {
-        // Implementation would create warranty records
-        // for applicable solar system items
+        try {
+            $this->warrantyService->createWarrantiesForOrder($order);
+        } catch (\Exception $e) {
+            Log::warning('Failed to create warranties for order', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     /**
@@ -308,10 +315,14 @@ class OrderProcessingService
      */
     private function activateWarranties(Order $order): void
     {
-        $order->warranties()->update([
-            'status' => 'ACTIVE',
-            'start_date' => now(),
-        ]);
+        try {
+            $this->warrantyService->activateWarrantiesForOrder($order);
+        } catch (\Exception $e) {
+            Log::warning('Failed to activate warranties for order', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     /**

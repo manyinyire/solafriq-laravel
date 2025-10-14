@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Warranty;
 use App\Models\WarrantyClaim;
+use App\Models\Order;
 use App\Http\Resources\WarrantyResource;
 use App\Http\Resources\WarrantyClaimResource;
+use App\Services\WarrantyService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +18,9 @@ use App\Notifications\WarrantyClaimStatusUpdated;
 
 class warrantyController extends Controller
 {
+    public function __construct(
+        private WarrantyService $warrantyService
+    ) {}
     public function index(): JsonResponse
     {
         $warranties = Auth::user()->warranties()
@@ -161,5 +166,91 @@ class warrantyController extends Controller
         $sequence = $lastClaim ? (int)substr($lastClaim->claim_number, -4) + 1 : 1;
 
         return $prefix . $year . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Get eligible orders for warranty creation (Admin only)
+     */
+    public function eligibleOrders(): JsonResponse
+    {
+        $this->authorize('viewAny', Warranty::class);
+
+        $orders = $this->warrantyService->getEligibleOrdersForWarranty();
+
+        return response()->json([
+            'data' => $orders->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'customer_name' => $order->customer_name,
+                    'customer_email' => $order->customer_email,
+                    'total_amount' => $order->total_amount,
+                    'status' => $order->status,
+                    'payment_status' => $order->payment_status,
+                    'created_at' => $order->created_at,
+                    'items_count' => $order->items->count(),
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * Manually create warranty for an order (Admin only)
+     */
+    public function createForOrder(Request $request, Order $order): JsonResponse
+    {
+        $this->authorize('create', Warranty::class);
+
+        $validated = $request->validate([
+            'product_name' => 'nullable|string|max:255',
+            'warranty_period_months' => 'nullable|integer|min:1|max:240',
+            'start_date' => 'nullable|date',
+        ]);
+
+        try {
+            $warranty = $this->warrantyService->manuallyCreateWarranty($order, $validated);
+
+            return response()->json([
+                'success' => true,
+                'data' => new WarrantyResource($warranty),
+                'message' => 'Warranty created successfully',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Download warranty certificate PDF
+     */
+    public function downloadCertificate(Warranty $warranty)
+    {
+        $this->authorize('view', $warranty);
+
+        try {
+            return $this->warrantyService->downloadWarrantyCertificate($warranty);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate warranty certificate',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get warranty statistics (Admin only)
+     */
+    public function statistics(): JsonResponse
+    {
+        $this->authorize('viewAny', Warranty::class);
+
+        $stats = $this->warrantyService->getWarrantyStatistics();
+
+        return response()->json([
+            'data' => $stats,
+        ]);
     }
 }
