@@ -71,9 +71,10 @@ Route::patch('/cart/items/{cartItem}', [App\Http\Controllers\CartController::cla
 Route::delete('/cart/items/{cartItem}', [App\Http\Controllers\CartController::class, 'remove'])->name('cart.remove');
 Route::delete('/cart/clear', [App\Http\Controllers\CartController::class, 'clear'])->name('cart.clear');
 
-// Checkout Routes (now for quote requests)
+// Checkout Routes
 Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout/request-quote', [App\Http\Controllers\QuoteController::class, 'requestQuote'])->name('checkout.request-quote');
+Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout.process');
 
 // Authentication Routes
 Route::get('/login', function () {

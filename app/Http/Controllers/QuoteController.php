@@ -41,32 +41,46 @@ class QuoteController extends Controller
             // Create quote
             $quote = Quote::create([
                 'quote_number' => Quote::generateQuoteNumber(),
-                'user_id' => Auth::id(),
+                'user_id' => Auth::id() ?? null, // Allow guest quotes
                 'customer_name' => $request->customer_name,
                 'customer_email' => $request->customer_email,
                 'customer_phone' => $request->customer_phone,
                 'customer_address' => $request->customer_address,
                 'status' => 'pending',
-                'subtotal' => $cart->total,
+                'subtotal' => $cart->total ?? 0,
                 'tax' => 0,
                 'discount' => 0,
-                'total' => $cart->total,
+                'total' => $cart->total ?? 0,
                 'notes' => $request->notes,
                 'valid_until' => now()->addDays(30),
             ]);
 
             // Create quote items from cart items
             foreach ($cart->items as $cartItem) {
+                // Get item name and description based on type
+                $itemName = '';
+                $itemDescription = '';
+                
+                if ($cartItem->item_type === 'solar_system' && $cartItem->solarSystem) {
+                    $itemName = $cartItem->solarSystem->name;
+                    $itemDescription = $cartItem->solarSystem->description ?? $cartItem->solarSystem->short_description ?? null;
+                } elseif ($cartItem->item_type === 'product' && $cartItem->product) {
+                    $itemName = $cartItem->product->name;
+                    $itemDescription = $cartItem->product->description ?? null;
+                } else {
+                    $itemName = 'Unknown Item';
+                }
+                
                 QuoteItem::create([
                     'quote_id' => $quote->id,
                     'solar_system_id' => $cartItem->solar_system_id,
                     'product_id' => $cartItem->product_id,
                     'item_type' => $cartItem->item_type,
-                    'item_name' => $cartItem->item_name,
-                    'item_description' => $cartItem->item->description ?? null,
+                    'item_name' => $itemName,
+                    'item_description' => $itemDescription,
                     'quantity' => $cartItem->quantity,
                     'unit_price' => $cartItem->price,
-                    'total_price' => $cartItem->total,
+                    'total_price' => $cartItem->price * $cartItem->quantity,
                 ]);
             }
 
@@ -251,12 +265,14 @@ class QuoteController extends Controller
         $sessionId = session()->getId();
 
         if ($userId) {
-            return Cart::where('user_id', $userId)
+            return Cart::with(['items.solarSystem', 'items.product'])
+                ->where('user_id', $userId)
                 ->where('session_id', null)
                 ->first();
         }
 
-        return Cart::where('user_id', null)
+        return Cart::with(['items.solarSystem', 'items.product'])
+            ->where('user_id', null)
             ->where('session_id', $sessionId)
             ->first();
     }

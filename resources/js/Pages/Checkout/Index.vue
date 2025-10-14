@@ -12,12 +12,15 @@ const props = defineProps({
   customer: Object,
 });
 
+const checkoutMode = ref('quote'); // 'quote' or 'buy'
+
 const form = ref({
   customer_name: props.customer?.name || '',
   customer_email: props.customer?.email || '',
   customer_phone: props.customer?.phone || '',
   customer_address: props.customer?.address || '',
   notes: '',
+  payment_method: 'card',
 });
 
 const processing = ref(false);
@@ -40,7 +43,7 @@ const finalTotal = computed(() => {
 });
 
 const requestQuote = () => {
-  if (!validateForm()) {
+  if (!validateForm(false)) {
     return;
   }
 
@@ -56,6 +59,7 @@ const requestQuote = () => {
   };
 
   router.post('/checkout/request-quote', quoteData, {
+    preserveScroll: true,
     onSuccess: (response) => {
       processing.value = false;
       // Redirect will be handled by the server
@@ -70,7 +74,40 @@ const requestQuote = () => {
   });
 };
 
-const validateForm = () => {
+const buyNow = () => {
+  if (!validateForm(true)) {
+    return;
+  }
+
+  processing.value = true;
+  errors.value = {};
+
+  const orderData = {
+    customer_name: form.value.customer_name,
+    customer_email: form.value.customer_email,
+    customer_phone: form.value.customer_phone,
+    customer_address: form.value.customer_address,
+    payment_method: form.value.payment_method,
+    notes: form.value.notes,
+  };
+
+  router.post('/checkout/process', orderData, {
+    preserveScroll: true,
+    onSuccess: (response) => {
+      processing.value = false;
+      // Redirect will be handled by the server
+    },
+    onError: (responseErrors) => {
+      processing.value = false;
+      errors.value = responseErrors;
+    },
+    onFinish: () => {
+      processing.value = false;
+    }
+  });
+};
+
+const validateForm = (requirePayment = false) => {
   const newErrors = {};
 
   if (!form.value.customer_name.trim()) {
@@ -89,6 +126,11 @@ const validateForm = () => {
 
   if (!form.value.customer_address.trim()) {
     newErrors.customer_address = 'Address is required';
+  }
+
+  // Only validate payment method if buying now
+  if (requirePayment && !form.value.payment_method) {
+    newErrors.payment_method = 'Please select a payment method';
   }
 
   errors.value = newErrors;
@@ -110,16 +152,80 @@ const goBack = () => {
             <div>
               <h1 class="text-3xl font-bold text-gray-900 flex items-center">
                 <CreditCard class="w-8 h-8 mr-3 text-orange-500" />
-                Request Quote
+                Checkout
               </h1>
               <p class="text-gray-600 mt-2">
-                Submit your quote request for {{ itemCount }} item{{ itemCount !== 1 ? 's' : '' }}. We'll review and send you a detailed quote.
+                {{ itemCount }} item{{ itemCount !== 1 ? 's' : '' }} in your cart
               </p>
             </div>
             <button @click="goBack"
                     class="flex items-center text-orange-600 hover:text-orange-700 font-medium">
               <ArrowLeft class="w-4 h-4 mr-2" />
               Back to Cart
+            </button>
+          </div>
+        </div>
+
+        <!-- Checkout Mode Selector -->
+        <div class="bg-white rounded-xl shadow-sm border p-6 mb-8">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Choose Your Option</h2>
+          <div class="grid md:grid-cols-2 gap-4">
+            <button
+              @click="checkoutMode = 'quote'"
+              :class="[
+                'p-6 rounded-xl border-2 transition-all duration-200 text-left',
+                checkoutMode === 'quote'
+                  ? 'border-orange-500 bg-orange-50'
+                  : 'border-gray-300 hover:border-orange-300'
+              ]"
+            >
+              <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0">
+                  <div :class="[
+                    'w-6 h-6 rounded-full border-2 flex items-center justify-center',
+                    checkoutMode === 'quote' ? 'border-orange-500' : 'border-gray-300'
+                  ]">
+                    <div v-if="checkoutMode === 'quote'" class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-bold text-gray-900 mb-1">Request Quote</h3>
+                  <p class="text-sm text-gray-600">Get a detailed quote from our team. We'll review your request and send you a customized quote within 24-48 hours.</p>
+                  <div class="mt-2 flex items-center text-xs text-green-600">
+                    <CheckCircle class="w-4 h-4 mr-1" />
+                    No payment required now
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            <button
+              @click="checkoutMode = 'buy'"
+              :class="[
+                'p-6 rounded-xl border-2 transition-all duration-200 text-left',
+                checkoutMode === 'buy'
+                  ? 'border-orange-500 bg-orange-50'
+                  : 'border-gray-300 hover:border-orange-300'
+              ]"
+            >
+              <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0">
+                  <div :class="[
+                    'w-6 h-6 rounded-full border-2 flex items-center justify-center',
+                    checkoutMode === 'buy' ? 'border-orange-500' : 'border-gray-300'
+                  ]">
+                    <div v-if="checkoutMode === 'buy'" class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-bold text-gray-900 mb-1">Buy Now</h3>
+                  <p class="text-sm text-gray-600">Complete your purchase immediately with your preferred payment method. Fast processing and quick delivery.</p>
+                  <div class="mt-2 flex items-center text-xs text-blue-600">
+                    <Zap class="w-4 h-4 mr-1" />
+                    Instant order processing
+                  </div>
+                </div>
+              </div>
             </button>
           </div>
         </div>
@@ -281,8 +387,8 @@ const goBack = () => {
               ></textarea>
             </div>
 
-            <!-- Payment Information -->
-            <div class="bg-white rounded-xl shadow-sm border p-6">
+            <!-- Payment Information (Only for Buy Now) -->
+            <div v-if="checkoutMode === 'buy'" class="bg-white rounded-xl shadow-sm border p-6">
               <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
                 <CreditCard class="w-5 h-5 mr-2 text-orange-500" />
                 Payment Information
@@ -506,14 +612,28 @@ const goBack = () => {
                 </div>
               </div>
 
-              <!-- Request Quote Button -->
-              <button @click="requestQuote"
-                      :disabled="processing"
-                      class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none disabled:cursor-not-allowed">
+              <!-- Submit Button -->
+              <button 
+                v-if="checkoutMode === 'quote'"
+                @click="requestQuote"
+                :disabled="processing"
+                class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none disabled:cursor-not-allowed">
                 <span v-if="processing">Submitting Request...</span>
                 <span v-else class="flex items-center justify-center">
                   <CheckCircle class="w-5 h-5 mr-2" />
                   Request Quote
+                </span>
+              </button>
+
+              <button 
+                v-else
+                @click="buyNow"
+                :disabled="processing"
+                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none disabled:cursor-not-allowed">
+                <span v-if="processing">Processing Order...</span>
+                <span v-else class="flex items-center justify-center">
+                  <CheckCircle class="w-5 h-5 mr-2" />
+                  Complete Purchase
                 </span>
               </button>
 
