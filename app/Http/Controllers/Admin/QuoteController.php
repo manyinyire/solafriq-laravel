@@ -174,8 +174,13 @@ class QuoteController extends Controller
 
             return back()->with('success', 'Quote sent successfully to ' . $quote->customer_email);
         } catch (\Exception $e) {
-            \Log::error('Quote send error: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Failed to send quote. Please try again.']);
+            \Log::error('Quote send error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return back()->withErrors(['error' => 'Failed to send quote. Please try again. Error: ' . $e->getMessage()]);
         }
     }
 

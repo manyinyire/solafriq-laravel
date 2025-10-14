@@ -169,6 +169,7 @@ Route::middleware([
     })->name('client.support');
 
     // Quote Routes
+    Route::get('/client/quotes', [App\Http\Controllers\QuoteController::class, 'index'])->name('client.quotes');
     Route::get('/quotes/{id}', [App\Http\Controllers\QuoteController::class, 'show'])->name('quotes.show');
     Route::post('/quotes/{id}/accept', [App\Http\Controllers\QuoteController::class, 'accept'])->name('quotes.accept');
     Route::post('/quotes/{id}/reject', [App\Http\Controllers\QuoteController::class, 'reject'])->name('quotes.reject');

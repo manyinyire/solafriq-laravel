@@ -22,7 +22,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        $cartItems = $cart->items()->with('solarSystem')->get();
+        $cartItems = $cart->items()->with(['solarSystem', 'product'])->get();
         $user = Auth::user();
 
         return Inertia::render('Checkout/Index', [

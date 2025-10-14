@@ -116,6 +116,26 @@
             <p style="margin: 5px 0 0 0; color: #1e3a8a;">You can track your quote status anytime by logging into your account.</p>
         </div>
         
+        @if($password)
+        <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 30px 0;">
+            <h3 style="color: #92400e; margin-top: 0;">🔐 Your Account Has Been Created!</h3>
+            <p style="margin: 10px 0 0 0; color: #92400e;">
+                We've automatically created an account for you to track your quotes and orders. Here are your login credentials:
+            </p>
+            <div style="background: white; padding: 15px; border-radius: 6px; margin-top: 15px;">
+                <div style="margin-bottom: 10px;">
+                    <strong style="color: #1f2937;">Email:</strong> {{ $quote->customer_email }}
+                </div>
+                <div>
+                    <strong style="color: #1f2937;">Password:</strong> <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 14px;">{{ $password }}</code>
+                </div>
+            </div>
+            <p style="margin: 15px 0 0 0; color: #92400e; font-size: 13px;">
+                <strong>Important:</strong> Please save these credentials and change your password after logging in for the first time.
+            </p>
+        </div>
+        @endif
+
         <p style="margin-top: 30px;">If you have any questions or need immediate assistance, please don't hesitate to contact us.</p>
         
         <p style="margin-top: 20px;">

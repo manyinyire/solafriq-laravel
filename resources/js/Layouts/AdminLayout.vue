@@ -14,7 +14,8 @@ import {
   User,
   ShoppingCart,
   Zap,
-  Calendar
+  Calendar,
+  FileText
 } from 'lucide-vue-next'
 
 const page = usePage()
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Solar Systems', href: '/admin/systems', icon: Zap },
   { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Quotes', href: '/admin/quotes', icon: FileText },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Scheduled Installations', href: '/admin/installations', icon: Calendar },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },

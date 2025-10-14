@@ -17,6 +17,21 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class QuoteController extends Controller
 {
     /**
+     * List all quotes for the authenticated user
+     */
+    public function index()
+    {
+        $quotes = Quote::with(['items'])
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return Inertia::render('Client/Quotes', [
+            'quotes' => $quotes,
+        ]);
+    }
+
+    /**
      * Create a quote request from cart
      */
     public function requestQuote(Request $request)
@@ -38,10 +53,36 @@ class QuoteController extends Controller
                 return back()->withErrors(['error' => 'Your cart is empty.']);
             }
 
+            // Auto-create user if not logged in and email doesn't exist
+            $user = Auth::user();
+            $autoCreatedPassword = null;
+            
+            if (!$user) {
+                $user = \App\Models\User::where('email', $request->customer_email)->first();
+                
+                if (!$user) {
+                    // Generate a random password
+                    $autoCreatedPassword = \Illuminate\Support\Str::random(12);
+                    
+                    // Create new user
+                    $user = \App\Models\User::create([
+                        'name' => $request->customer_name,
+                        'email' => $request->customer_email,
+                        'phone' => $request->customer_phone,
+                        'address' => $request->customer_address,
+                        'password' => bcrypt($autoCreatedPassword),
+                        'email_verified_at' => now(), // Auto-verify email
+                    ]);
+                }
+                
+                // Log the user in
+                Auth::login($user);
+            }
+
             // Create quote
             $quote = Quote::create([
                 'quote_number' => Quote::generateQuoteNumber(),
-                'user_id' => Auth::id() ?? null, // Allow guest quotes
+                'user_id' => $user->id,
                 'customer_name' => $request->customer_name,
                 'customer_email' => $request->customer_email,
                 'customer_phone' => $request->customer_phone,
@@ -90,18 +131,28 @@ class QuoteController extends Controller
             // Send notification to admin
             $this->sendQuoteRequestNotification($quote);
 
-            // Send confirmation to client
-            $this->sendQuoteConfirmation($quote);
+            // Send confirmation to client (with password if auto-created)
+            $this->sendQuoteConfirmation($quote, $autoCreatedPassword);
 
             DB::commit();
 
+            $successMessage = 'Quote request submitted successfully! We will review and send you a detailed quote soon.';
+            if ($autoCreatedPassword) {
+                $successMessage .= ' An account has been created for you. Check your email for login details.';
+            }
+
             return redirect()->route('quotes.show', $quote->id)
-                ->with('success', 'Quote request submitted successfully! We will review and send you a detailed quote soon.');
+                ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Quote request error: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Failed to submit quote request. Please try again.']);
+            \Log::error('Quote request error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return back()->withErrors(['error' => 'Failed to submit quote request. Please try again. Error: ' . $e->getMessage()]);
         }
     }
 
@@ -112,6 +163,7 @@ class QuoteController extends Controller
     {
         $quote = Quote::with(['items.solarSystem', 'items.product'])
             ->where('user_id', Auth::id())
+            ->orWhere('customer_email', Auth::user()?->email)
             ->findOrFail($id);
 
         return Inertia::render('Client/QuoteDetails', [
@@ -235,7 +287,7 @@ class QuoteController extends Controller
      */
     private function sendQuoteRequestNotification(Quote $quote)
     {
-        $adminEmail = CompanySetting::getValue('company_email', config('mail.from.address'));
+        $adminEmail = CompanySetting::where('key', 'company_email')->value('value') ?? config('mail.from.address');
         
         Mail::to($adminEmail)->send(new \App\Mail\QuoteRequestNotification($quote));
     }
@@ -243,9 +295,9 @@ class QuoteController extends Controller
     /**
      * Send quote confirmation to client
      */
-    private function sendQuoteConfirmation(Quote $quote)
+    private function sendQuoteConfirmation(Quote $quote, $password = null)
     {
-        Mail::to($quote->customer_email)->send(new \App\Mail\QuoteConfirmation($quote));
+        Mail::to($quote->customer_email)->send(new \App\Mail\QuoteConfirmation($quote, $password));
     }
 
     /**

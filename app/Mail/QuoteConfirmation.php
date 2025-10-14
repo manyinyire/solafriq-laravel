@@ -18,7 +18,8 @@ class QuoteConfirmation extends Mailable implements ShouldQueue
      * Create a new message instance.
      */
     public function __construct(
-        public Quote $quote
+        public Quote $quote,
+        public $password = null
     )
     {
         //
@@ -43,6 +44,7 @@ class QuoteConfirmation extends Mailable implements ShouldQueue
             view: 'emails.quote-confirmation',
             with: [
                 'quote' => $this->quote,
+                'password' => $this->password,
             ],
         );
     }

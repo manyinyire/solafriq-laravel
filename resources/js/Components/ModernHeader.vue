@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Menu, ShoppingCart, User, LogOut, Settings, Sun, Shield, Phone, Mail, ChevronDown } from 'lucide-vue-next';
+import { Menu, ShoppingCart, User, LogOut, Settings, Sun, Shield, Phone, Mail, ChevronDown, FileText } from 'lucide-vue-next';
 
 const page = usePage();
 
@@ -180,6 +180,10 @@ const navItems = computed(() => {
                         <Link :href="$page.props.auth.user.is_admin ? '/admin/dashboard' : '/dashboard'" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                             <User class="h-4 w-4 mr-3" />
                             Dashboard
+                        </Link>
+                        <Link v-if="!$page.props.auth.user.is_admin" href="/client/quotes" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                            <FileText class="h-4 w-4 mr-3" />
+                            My Quotes
                         </Link>
                         <Link href="/profile" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                             <Settings class="h-4 w-4 mr-3" />
