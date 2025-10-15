@@ -12,9 +12,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First, temporarily change enum to include both old and new values
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED', 'ACCEPTED', 'SCHEDULED', 'INSTALLED', 'RETURNED') NOT NULL DEFAULT 'PENDING'");
-
         // Update existing order statuses to match new enum values
         DB::table('orders')->where('status', 'PROCESSING')->update(['status' => 'ACCEPTED']);
         DB::table('orders')->where('status', 'SHIPPED')->update(['status' => 'SCHEDULED']);
@@ -22,8 +19,14 @@ return new class extends Migration
         DB::table('orders')->where('status', 'CANCELLED')->update(['status' => 'RETURNED']);
         DB::table('orders')->where('status', 'REFUNDED')->update(['status' => 'RETURNED']);
 
-        // Finally, set the enum to only the new values
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('PENDING', 'ACCEPTED', 'SCHEDULED', 'INSTALLED', 'RETURNED') NOT NULL DEFAULT 'PENDING'");
+        // Only modify column for MySQL
+        if (DB::getDriverName() !== 'sqlite') {
+            // First, temporarily change enum to include both old and new values
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED', 'ACCEPTED', 'SCHEDULED', 'INSTALLED', 'RETURNED') NOT NULL DEFAULT 'PENDING'");
+            
+            // Finally, set the enum to only the new values
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('PENDING', 'ACCEPTED', 'SCHEDULED', 'INSTALLED', 'RETURNED') NOT NULL DEFAULT 'PENDING'");
+        }
     }
 
     /**
@@ -37,7 +40,10 @@ return new class extends Migration
         DB::table('orders')->where('status', 'INSTALLED')->update(['status' => 'DELIVERED']);
         DB::table('orders')->where('status', 'RETURNED')->update(['status' => 'CANCELLED']);
 
-        // Revert the enum column
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED') NOT NULL DEFAULT 'PENDING'");
+        // Only modify column for MySQL
+        if (DB::getDriverName() !== 'sqlite') {
+            // Revert the enum column
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED') NOT NULL DEFAULT 'PENDING'");
+        }
     }
 };

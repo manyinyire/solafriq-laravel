@@ -75,6 +75,7 @@ Route::delete('/cart/clear', [App\Http\Controllers\CartController::class, 'clear
 Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout/request-quote', [App\Http\Controllers\QuoteController::class, 'requestQuote'])->name('checkout.request-quote');
 Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout.process');
+Route::get('/checkout/success/{orderId}', [App\Http\Controllers\CheckoutController::class, 'success'])->name('checkout.success');
 
 // Authentication Routes
 Route::get('/login', function () {
@@ -98,6 +99,19 @@ Route::get('/email/verify/{id}/{hash}', [App\Http\Controllers\Auth\AuthControlle
 
 Route::post('/email/verification-notification', [App\Http\Controllers\Auth\AuthController::class, 'webResendVerificationEmail'])
     ->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
+// Password Reset Routes
+Route::get('/forgot-password', [App\Http\Controllers\Auth\AuthController::class, 'showForgotPasswordForm'])
+    ->middleware('guest')->name('password.request');
+
+Route::post('/forgot-password', [App\Http\Controllers\Auth\AuthController::class, 'webForgotPassword'])
+    ->middleware('guest')->name('password.email');
+
+Route::get('/reset-password/{token}', [App\Http\Controllers\Auth\AuthController::class, 'showResetPasswordForm'])
+    ->middleware('guest')->name('password.reset');
+
+Route::post('/reset-password', [App\Http\Controllers\Auth\AuthController::class, 'webResetPassword'])
+    ->middleware('guest')->name('password.update');
 
 // Custom system builder (public)
 Route::get('custom-builder', function () {
@@ -179,6 +193,7 @@ Route::middleware([
     })->name('profile.show');
 
     Route::put('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [App\Http\Controllers\ProfileController::class, 'deleteAccount'])->name('profile.delete');
 
     Route::get('/profile/verify-email-change/{token}', [App\Http\Controllers\ProfileController::class, 'verifyEmailChange'])->name('profile.verifyEmailChange')->middleware('signed');
 

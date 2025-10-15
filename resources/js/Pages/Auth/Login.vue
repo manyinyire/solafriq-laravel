@@ -63,6 +63,18 @@
             <p class="mt-2 text-gray-600">Access your solar energy dashboard</p>
           </div>
 
+          <!-- Success/Status Messages -->
+          <div v-if="$page.props.flash.status" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center">
+            <Check class="w-5 h-5 mr-2 flex-shrink-0" />
+            <span>{{ $page.props.flash.status }}</span>
+          </div>
+
+          <!-- Error Messages -->
+          <div v-if="Object.keys(errors).length > 0 && !errors.email && !errors.password" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center">
+            <AlertCircle class="w-5 h-5 mr-2 flex-shrink-0" />
+            <span>Login failed. Please check your credentials and try again.</span>
+          </div>
+
           <!-- Login form -->
           <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
             <form class="space-y-6" @submit.prevent="submit">
@@ -133,9 +145,9 @@
                 </div>
 
                 <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500 transition-colors">
+                  <Link :href="route('password.request')" class="font-medium text-blue-600 hover:text-blue-500 transition-colors">
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
               </div>
 

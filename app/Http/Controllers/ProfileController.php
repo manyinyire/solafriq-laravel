@@ -6,6 +6,7 @@ use App\Notifications\VerifyEmailChangeNotification;
 use App\Models\User;
 use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -84,5 +85,31 @@ class ProfileController extends Controller
         ]);
 
         return redirect()->route('profile.show')->with('status', 'Your email address has been updated.');
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'password' => 'required',
+        ]);
+
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->withErrors([
+                'password' => 'The password is incorrect.',
+            ]);
+        }
+
+        // Log the user out
+        Auth::logout();
+
+        // Delete the user account (soft delete if configured)
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('status', 'Your account has been deleted successfully.');
     }
 }

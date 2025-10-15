@@ -122,15 +122,28 @@ class CheckoutController extends Controller
 
     public function success($orderId)
     {
-        $order = Order::with(['items'])->findOrFail($orderId);
+        $order = Order::with(['items.solarSystem', 'items.product'])->findOrFail($orderId);
 
         // Ensure user can only see their own orders or guest orders without user_id
         if ($order->user_id && $order->user_id !== Auth::id()) {
             abort(403);
         }
 
+        // Format order items for display
+        $formattedItems = $order->items->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'name' => $item->solarSystem ? $item->solarSystem->name : ($item->product ? $item->product->name : 'Item'),
+                'description' => $item->solarSystem ? $item->solarSystem->description : ($item->product ? $item->product->description : ''),
+                'quantity' => $item->quantity,
+                'price' => $item->price,
+            ];
+        });
+
         return Inertia::render('Checkout/Success', [
-            'order' => $order,
+            'order' => array_merge($order->toArray(), [
+                'items' => $formattedItems
+            ]),
         ]);
     }
 

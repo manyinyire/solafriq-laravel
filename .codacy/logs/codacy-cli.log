@@ -1,2 +1,4 @@
 2025-10-10T15:16:39+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
 2025-10-10T15:16:39+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/home/freddy/.cache/codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 init --provider gh --organization manyinyire --repository solafriq-laravel --api-token ***] args=[] command=init
+2025-10-15T17:10:52+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T17:10:52+02:00 [INFO] (codacy-cli-v2/cli-v2.go:55) No configuration file was found, execute init command first.
