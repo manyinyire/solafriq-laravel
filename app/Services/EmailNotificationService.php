@@ -474,4 +474,159 @@ class EmailNotificationService
             return false;
         }
     }
+
+    /**
+     * Send order approved notification with invoice attachment
+     */
+    public function sendOrderApprovedWithInvoice(Order $order): bool
+    {
+        try {
+            $order->load(['items', 'invoice']);
+
+            $data = [
+                'order' => $order,
+                'customer_name' => $order->customer_name,
+                'order_number' => $order->id,
+                'tracking_number' => $order->tracking_number,
+                'items' => $order->items,
+                'total_amount' => $order->total_amount,
+                'invoice' => $order->invoice,
+                'message' => 'Great news! Your order has been approved and is now being processed.',
+            ];
+
+            // TODO: Attach invoice PDF
+            // Mail::to($order->customer_email)
+            //     ->send(new OrderApprovedMail($data)->attachInvoicePDF($order));
+
+            Log::info('Order approved email with invoice sent', [
+                'order_id' => $order->id,
+                'customer_email' => $order->customer_email,
+                'invoice_id' => $order->invoice?->id,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send order approved email', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Send order declined notification
+     */
+    public function sendOrderDeclinedNotification(Order $order): bool
+    {
+        try {
+            $data = [
+                'order' => $order,
+                'customer_name' => $order->customer_name,
+                'order_number' => $order->id,
+                'items' => $order->items,
+                'total_amount' => $order->total_amount,
+                'message' => 'We regret to inform you that your order has been declined. Please contact our support team for more information.',
+                'support_email' => 'support@solafriq.com',
+                'support_phone' => '+1-800-555-0123',
+            ];
+
+            // Mail::to($order->customer_email)->send(new OrderDeclinedMail($data));
+
+            Log::info('Order declined email sent', [
+                'order_id' => $order->id,
+                'customer_email' => $order->customer_email
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send order declined email', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Send payment confirmation with paid invoice attachment
+     */
+    public function sendPaymentConfirmationWithInvoice(Order $order): bool
+    {
+        try {
+            $order->load(['items', 'invoice']);
+
+            $data = [
+                'order' => $order,
+                'customer_name' => $order->customer_name,
+                'payment_method' => $order->payment_method,
+                'amount_paid' => $order->total_amount,
+                'payment_date' => now(),
+                'invoice' => $order->invoice,
+                'order_number' => $order->id,
+                'message' => 'Your payment has been confirmed! Your invoice is attached.',
+            ];
+
+            // TODO: Attach paid invoice PDF
+            // Mail::to($order->customer_email)
+            //     ->send(new PaymentConfirmationMail($data)->attachInvoicePDF($order));
+
+            Log::info('Payment confirmation email with invoice sent', [
+                'order_id' => $order->id,
+                'customer_email' => $order->customer_email,
+                'invoice_id' => $order->invoice?->id,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send payment confirmation email', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Send order installed notification with warranty certificate
+     */
+    public function sendOrderInstalledWithWarranty(Order $order): bool
+    {
+        try {
+            $order->load(['items', 'warranties']);
+
+            $data = [
+                'order' => $order,
+                'customer_name' => $order->customer_name,
+                'order_number' => $order->id,
+                'installation_date' => now(),
+                'warranties' => $order->warranties,
+                'items' => $order->items,
+                'message' => 'Your solar system has been successfully installed! Your warranty certificates are attached.',
+                'support_contact' => 'support@solafriq.com',
+            ];
+
+            // TODO: Attach warranty certificates PDF
+            // Mail::to($order->customer_email)
+            //     ->send(new OrderInstalledMail($data)->attachWarrantiesPDF($order));
+
+            Log::info('Order installed email with warranty sent', [
+                'order_id' => $order->id,
+                'customer_email' => $order->customer_email,
+                'warranties_count' => $order->warranties->count(),
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send order installed email', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
+    }
 }

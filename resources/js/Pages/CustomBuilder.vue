@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Plus, Minus, ShoppingCart, Zap, Battery, Sun, Settings, Check, X } from 'lucide-vue-next';
+import MainLayout from '@/Layouts/MainLayout.vue';
 import axios from 'axios';
 
 const products = ref({
@@ -44,13 +45,60 @@ const fetchProducts = async () => {
   }
 };
 
-onMounted(fetchProducts);
+// Apply query parameters from Welcome.vue quick builder
+const applyQueryParameters = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const panelId = urlParams.get('panel');
+  const batteryId = urlParams.get('battery');
+  const inverterId = urlParams.get('inverter');
+  const panelQty = urlParams.get('panelQty');
+  const batteryQty = urlParams.get('batteryQty');
+
+  // Find and add products if they exist
+  if (panelId) {
+    const panel = products.value.SOLAR_PANEL?.find(p => p.id === parseInt(panelId));
+    if (panel && panelQty) {
+      const quantity = parseInt(panelQty);
+      for (let i = 0; i < quantity; i++) {
+        addComponent(panel);
+      }
+    }
+  }
+
+  if (batteryId) {
+    const battery = products.value.BATTERY?.find(b => b.id === parseInt(batteryId));
+    if (battery && batteryQty) {
+      const quantity = parseInt(batteryQty);
+      for (let i = 0; i < quantity; i++) {
+        addComponent(battery);
+      }
+    }
+  }
+
+  if (inverterId) {
+    const inverter = products.value.INVERTER?.find(i => i.id === parseInt(inverterId));
+    if (inverter) {
+      addComponent(inverter);
+    }
+  }
+};
+
+onMounted(async () => {
+  await fetchProducts();
+  applyQueryParameters();
+});
 
 // Add or update component
 const addComponent = (product) => {
   const existingIndex = selectedComponents.value.findIndex(c => c.product_id === product.id);
-  
+
   if (existingIndex >= 0) {
+    // Check if adding one more exceeds stock
+    const currentQuantity = selectedComponents.value[existingIndex].quantity;
+    if (currentQuantity >= product.stock_quantity) {
+      alert(`Cannot add more. Only ${product.stock_quantity} units available in stock.`);
+      return;
+    }
     selectedComponents.value[existingIndex].quantity += 1;
   } else {
     selectedComponents.value.push({
@@ -65,6 +113,7 @@ const addComponent = (product) => {
       capacity: product.capacity,
       image_url: product.image_url,
       specifications: product.specifications,
+      stock_quantity: product.stock_quantity,
     });
   }
 };
@@ -81,7 +130,15 @@ const removeComponent = (productId) => {
 const updateQuantity = (productId, change) => {
   const component = selectedComponents.value.find(c => c.product_id === productId);
   if (component) {
-    component.quantity = Math.max(1, component.quantity + change);
+    const newQuantity = component.quantity + change;
+
+    // Check stock availability
+    if (newQuantity > component.stock_quantity) {
+      alert(`Cannot add more. Only ${component.stock_quantity} units available in stock.`);
+      return;
+    }
+
+    component.quantity = Math.max(1, newQuantity);
   }
 };
 
@@ -166,22 +223,16 @@ const formatCurrency = (amount) => {
 
 <template>
   <Head title="Custom Solar System Builder" />
-  
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white shadow-sm">
-      <div class="container mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900">Custom Solar System Builder</h1>
-            <p class="text-sm text-gray-600">Build your perfect solar system from our product catalog</p>
-          </div>
-          <Link href="/" class="text-orange-600 hover:text-orange-700 font-medium">
-            ← Back to Home
-          </Link>
+
+  <MainLayout>
+    <div class="bg-white shadow-sm">
+      <div class="container mx-auto px-4 py-6">
+        <div class="text-center">
+          <h1 class="text-3xl font-bold text-gray-900">Custom Solar System Builder</h1>
+          <p class="text-gray-600 mt-2">Build your perfect solar system from our product catalog and request a custom quote</p>
         </div>
       </div>
-    </header>
+    </div>
 
     <div class="container mx-auto px-4 py-8">
       <div class="grid lg:grid-cols-3 gap-8">
@@ -254,9 +305,19 @@ const formatCurrency = (amount) => {
                           Add
                         </button>
                       </div>
-                      <div v-if="product.power_rating || product.capacity" class="mt-2 text-xs text-gray-500">
-                        <span v-if="product.power_rating">{{ product.power_rating }}W</span>
-                        <span v-if="product.capacity" class="ml-2">{{ product.capacity }}Ah</span>
+                      <div class="mt-2 flex items-center justify-between text-xs">
+                        <div class="text-gray-500">
+                          <span v-if="product.power_rating">{{ product.power_rating }}W</span>
+                          <span v-if="product.capacity" class="ml-2">{{ product.capacity }}Ah</span>
+                        </div>
+                        <div :class="[
+                          'font-semibold',
+                          product.stock_quantity > 10 ? 'text-green-600' :
+                          product.stock_quantity > 5 ? 'text-yellow-600' :
+                          'text-red-600'
+                        ]">
+                          {{ product.stock_quantity }} in stock
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -368,15 +429,18 @@ const formatCurrency = (amount) => {
               ]"
             >
               <ShoppingCart class="w-5 h-5 inline mr-2" />
-              Add to Cart & Checkout
+              Request Quote for Custom System
             </button>
 
             <p v-if="!hasRequiredComponents" class="text-xs text-red-500 mt-2 text-center">
               * Solar Panel, Inverter, Battery, and Mounting are required
             </p>
+            <p v-else class="text-xs text-gray-500 mt-2 text-center">
+              Continue to cart to complete your quote request
+            </p>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </MainLayout>
 </template>

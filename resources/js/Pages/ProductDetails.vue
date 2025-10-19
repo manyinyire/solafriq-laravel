@@ -74,6 +74,7 @@ const closeNotification = () => {
 
 const addToCart = () => {
   router.post('/cart/add', {
+    type: 'solar_system',
     system_id: props.system.id,
     quantity: quantity.value,
   }, {
@@ -88,7 +89,8 @@ const addToCart = () => {
     },
     onError: (errors) => {
       console.error('Cart add error:', errors);
-      showNotificationMessage('error', 'Cart Error', 'Error adding product to cart. Please try again.');
+      const errorMessage = errors.type || errors.error || 'Error adding product to cart. Please try again.';
+      showNotificationMessage('error', 'Cart Error', errorMessage);
     }
   });
 };

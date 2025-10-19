@@ -22,12 +22,32 @@ Route::get('/', function () {
         ->orderBy('name')
         ->get();
 
+    // Get available products for quick builder
+    $builderProducts = [
+        'panels' => App\Models\Product::active()
+            ->where('category', 'SOLAR_PANEL')
+            ->where('stock_quantity', '>', 0)
+            ->orderBy('power_rating')
+            ->get(['id', 'name', 'brand', 'model', 'power_rating', 'price', 'stock_quantity']),
+        'batteries' => App\Models\Product::active()
+            ->where('category', 'BATTERY')
+            ->where('stock_quantity', '>', 0)
+            ->orderBy('capacity')
+            ->get(['id', 'name', 'brand', 'model', 'capacity', 'price', 'stock_quantity']),
+        'inverters' => App\Models\Product::active()
+            ->where('category', 'INVERTER')
+            ->where('stock_quantity', '>', 0)
+            ->orderBy('power_rating')
+            ->get(['id', 'name', 'brand', 'model', 'power_rating', 'price', 'stock_quantity']),
+    ];
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
         'solarSystems' => $solarSystems,
+        'builderProducts' => $builderProducts,
     ]);
 });
 
@@ -201,8 +221,7 @@ Route::middleware([
     Route::apiResource('installment-plans', \App\Http\Controllers\Api\V1\InstallmentPlanController::class);
     Route::post('installment-plans/{installmentPlan}/payments/{payment}/pay', [\App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'processPayment']);
 
-    // Warranties
-    Route::get('warranties', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'index']);
+    // Warranty API routes (specific warranty actions)
     Route::get('warranties/{warranty}', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'show']);
     Route::get('warranties/{warranty}/certificate', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'downloadCertificate']);
     Route::post('warranties/{warranty}/claims', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'createClaim']);

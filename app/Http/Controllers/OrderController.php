@@ -16,7 +16,7 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->load('items.solarSystem');
+        $order->load('items');
 
         return Inertia::render('Client/OrderDetails', [
             'order' => $order,

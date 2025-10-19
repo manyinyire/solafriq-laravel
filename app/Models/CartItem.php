@@ -15,6 +15,7 @@ class CartItem extends Model
         'solar_system_id',
         'product_id',
         'item_type',
+        'custom_system_name',
         'quantity',
         'price',
         'metadata',
@@ -58,6 +59,9 @@ class CartItem extends Model
 
     public function getItemNameAttribute(): string
     {
+        if ($this->item_type === 'custom_component') {
+            return $this->product ? $this->product->name . ' (Custom)' : 'Unknown Custom Component';
+        }
         if ($this->item_type === 'product') {
             return $this->product ? $this->product->name : 'Unknown Product';
         }

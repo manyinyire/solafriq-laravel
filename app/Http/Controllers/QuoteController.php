@@ -101,12 +101,19 @@ class QuoteController extends Controller
                 // Get item name and description based on type
                 $itemName = '';
                 $itemDescription = '';
-                
+
                 if ($cartItem->item_type === 'solar_system' && $cartItem->solarSystem) {
                     $itemName = $cartItem->solarSystem->name;
                     $itemDescription = $cartItem->solarSystem->description ?? $cartItem->solarSystem->short_description ?? null;
                 } elseif ($cartItem->item_type === 'product' && $cartItem->product) {
                     $itemName = $cartItem->product->name;
+                    $itemDescription = $cartItem->product->description ?? null;
+                } elseif ($cartItem->item_type === 'custom_component' && $cartItem->product) {
+                    // Custom component from custom builder
+                    $itemName = $cartItem->product->name;
+                    if ($cartItem->custom_system_name) {
+                        $itemName .= ' (Part of: ' . $cartItem->custom_system_name . ')';
+                    }
                     $itemDescription = $cartItem->product->description ?? null;
                 } else {
                     $itemName = 'Unknown Item';

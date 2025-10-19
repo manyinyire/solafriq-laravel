@@ -194,7 +194,9 @@ class OrderProcessingService
     private function handleStatusChange(Order $order, string $oldStatus, string $newStatus): void
     {
         match ($newStatus) {
+            'PROCESSING' => $this->handleAcceptedStatus($order), // Approve order
             'ACCEPTED' => $this->handleAcceptedStatus($order),
+            'CANCELLED' => $this->handleDeclinedStatus($order), // Decline order
             'SCHEDULED' => $this->emailService->sendShippingNotification($order),
             'INSTALLED' => $this->handleInstalledStatus($order),
             'RETURNED' => $this->handleReturnedStatus($order),
@@ -227,11 +229,25 @@ class OrderProcessingService
             'tracking_number' => $this->generateTrackingNumber($order)
         ]);
 
+        // Generate or regenerate invoice
+        if (!$order->invoice) {
+            $this->invoiceService->generateInvoice($order);
+        }
+
         // Create warranties for applicable items
         $this->createWarranties($order);
-        
-        // Send order accepted email to customer
-        $this->emailService->sendOrderAcceptedNotification($order);
+
+        // Send order accepted email to customer with invoice
+        $this->emailService->sendOrderApprovedWithInvoice($order);
+    }
+
+    /**
+     * Handle declined status
+     */
+    private function handleDeclinedStatus(Order $order): void
+    {
+        // Send order declined email to customer
+        $this->emailService->sendOrderDeclinedNotification($order);
     }
 
     /**
@@ -248,11 +264,16 @@ class OrderProcessingService
      */
     private function handleInstalledStatus(Order $order): void
     {
+        // Create warranties if they don't exist
+        if ($order->warranties->isEmpty()) {
+            $this->createWarranties($order);
+        }
+
         // Activate warranties
         $this->activateWarranties($order);
 
-        // Send installation confirmation
-        $this->emailService->sendDeliveryConfirmation($order);
+        // Send installation confirmation with warranty certificates
+        $this->emailService->sendOrderInstalledWithWarranty($order);
     }
 
     /**
@@ -265,8 +286,8 @@ class OrderProcessingService
             $order->invoice->markAsPaid();
         }
 
-        // Send payment confirmation
-        $this->emailService->sendPaymentConfirmation($order);
+        // Send payment confirmation with paid invoice
+        $this->emailService->sendPaymentConfirmationWithInvoice($order);
     }
 
     /**
@@ -400,8 +421,8 @@ class OrderProcessingService
                 $order->invoice->markAsPaid();
             }
 
-            // Send payment confirmation
-            $this->emailService->sendPaymentConfirmation($order);
+            // Send payment confirmation with paid invoice
+            $this->emailService->sendPaymentConfirmationWithInvoice($order);
 
             Log::info('Payment confirmed by admin', [
                 'order_id' => $order->id,

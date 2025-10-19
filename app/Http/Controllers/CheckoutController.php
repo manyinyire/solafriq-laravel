@@ -85,17 +85,40 @@ class CheckoutController extends Controller
 
             // Create order items
             foreach ($cart->items as $cartItem) {
-                // Get the solar system details
-                $solarSystem = $cartItem->solarSystem;
+                // Get item details based on type
+                $itemName = '';
+                $itemDescription = '';
+                $itemImageUrl = null;
+                $itemType = $cartItem->item_type ?? 'unknown';
+
+                if ($cartItem->item_type === 'solar_system' && $cartItem->solarSystem) {
+                    $itemName = $cartItem->solarSystem->name;
+                    $itemDescription = $cartItem->solarSystem->description ?? $cartItem->solarSystem->capacity . 'kW Solar System';
+                    $itemImageUrl = $cartItem->solarSystem->image_url ?? null;
+                } elseif ($cartItem->item_type === 'product' && $cartItem->product) {
+                    $itemName = $cartItem->product->name;
+                    $itemDescription = $cartItem->product->description ?? '';
+                    $itemImageUrl = $cartItem->product->image_url ?? null;
+                } elseif ($cartItem->item_type === 'custom_component' && $cartItem->product) {
+                    $itemName = $cartItem->product->name;
+                    if ($cartItem->custom_system_name) {
+                        $itemName .= ' (Part of: ' . $cartItem->custom_system_name . ')';
+                    }
+                    $itemDescription = $cartItem->product->description ?? '';
+                    $itemImageUrl = $cartItem->product->image_url ?? null;
+                } else {
+                    $itemName = 'Unknown Item';
+                    $itemDescription = 'Item details not available';
+                }
 
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'name' => $solarSystem->name,
-                    'description' => $solarSystem->description ?? $solarSystem->capacity . 'kW Solar System',
+                    'name' => $itemName,
+                    'description' => $itemDescription,
                     'quantity' => $cartItem->quantity,
                     'price' => $cartItem->price,
-                    'image_url' => $solarSystem->image_url ?? null,
-                    'type' => 'solar_system',
+                    'image_url' => $itemImageUrl,
+                    'type' => $itemType,
                 ]);
             }
 
@@ -122,7 +145,7 @@ class CheckoutController extends Controller
 
     public function success($orderId)
     {
-        $order = Order::with(['items.solarSystem', 'items.product'])->findOrFail($orderId);
+        $order = Order::with(['items'])->findOrFail($orderId);
 
         // Ensure user can only see their own orders or guest orders without user_id
         if ($order->user_id && $order->user_id !== Auth::id()) {
@@ -133,8 +156,8 @@ class CheckoutController extends Controller
         $formattedItems = $order->items->map(function ($item) {
             return [
                 'id' => $item->id,
-                'name' => $item->solarSystem ? $item->solarSystem->name : ($item->product ? $item->product->name : 'Item'),
-                'description' => $item->solarSystem ? $item->solarSystem->description : ($item->product ? $item->product->description : ''),
+                'name' => $item->name,
+                'description' => $item->description ?? '',
                 'quantity' => $item->quantity,
                 'price' => $item->price,
             ];

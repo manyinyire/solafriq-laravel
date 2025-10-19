@@ -5,42 +5,19 @@ import AdminLayout from '@/Layouts/AdminLayout.vue'
 import {
   ShoppingCart,
   Search,
-  Filter,
-  Eye,
-  Edit,
   Download,
   Calendar,
   User,
   DollarSign,
-  Package,
   CheckCircle,
   XCircle,
-  MoreHorizontal,
-  Truck,
-  RefreshCw,
-  DollarSign as RefundIcon,
-  Mail
+  Eye
 } from 'lucide-vue-next'
 
 const loading = ref(true)
 const orders = ref([])
 const searchQuery = ref('')
 const statusFilter = ref('all')
-
-// Modal states
-const showStatusModal = ref(false)
-const showTrackingModal = ref(false)
-const showRefundModal = ref(false)
-const showNotificationModal = ref(false)
-const selectedOrder = ref(null)
-
-// Form data
-const newStatus = ref('')
-const trackingNumber = ref('')
-const refundAmount = ref(0)
-const refundReason = ref('')
-const notificationType = ref('')
-const dropdownOpen = ref(null)
 
 onMounted(async () => {
   await loadOrders()
@@ -174,138 +151,6 @@ const declineOrder = async (orderId) => {
   }
 }
 
-const openStatusModal = (order) => {
-  selectedOrder.value = order
-  newStatus.value = order.status
-  showStatusModal.value = true
-}
-
-const updateOrderStatus = async () => {
-  try {
-    const response = await fetch(`/admin/orders/${selectedOrder.value.id}/status`, {
-      method: 'PUT',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-      },
-      credentials: 'same-origin',
-      body: JSON.stringify({
-        status: newStatus.value
-      })
-    })
-
-    const data = await response.json()
-    if (data.success) {
-      showStatusModal.value = false
-      loadOrders()
-    }
-  } catch (error) {
-    console.error('Failed to update order status:', error)
-  }
-}
-
-const openTrackingModal = (order) => {
-  selectedOrder.value = order
-  trackingNumber.value = order.tracking_number || ''
-  showTrackingModal.value = true
-}
-
-const updateTracking = async () => {
-  try {
-    const response = await fetch(`/admin/orders/${selectedOrder.value.id}/tracking`, {
-      method: 'PUT',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-      },
-      credentials: 'same-origin',
-      body: JSON.stringify({
-        tracking_number: trackingNumber.value
-      })
-    })
-
-    const data = await response.json()
-    if (data.success) {
-      showTrackingModal.value = false
-      loadOrders()
-    }
-  } catch (error) {
-    console.error('Failed to update tracking number:', error)
-  }
-}
-
-const openRefundModal = (order) => {
-  selectedOrder.value = order
-  refundAmount.value = order.total_amount
-  refundReason.value = ''
-  showRefundModal.value = true
-}
-
-const processRefund = async () => {
-  try {
-    const response = await fetch(`/admin/orders/${selectedOrder.value.id}/refund`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-      },
-      credentials: 'same-origin',
-      body: JSON.stringify({
-        refund_amount: refundAmount.value,
-        refund_reason: refundReason.value
-      })
-    })
-
-    const data = await response.json()
-    if (data.success) {
-      showRefundModal.value = false
-      loadOrders()
-    }
-  } catch (error) {
-    console.error('Failed to process refund:', error)
-  }
-}
-
-const openNotificationModal = (order) => {
-  selectedOrder.value = order
-  notificationType.value = ''
-  showNotificationModal.value = true
-}
-
-const resendNotification = async () => {
-  try {
-    const response = await fetch(`/admin/orders/${selectedOrder.value.id}/resend-notification`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-      },
-      credentials: 'same-origin',
-      body: JSON.stringify({
-        notification_type: notificationType.value
-      })
-    })
-
-    const data = await response.json()
-    if (data.success) {
-      showNotificationModal.value = false
-    }
-  } catch (error) {
-    console.error('Failed to resend notification:', error)
-  }
-}
-
-const toggleDropdown = (orderId) => {
-  dropdownOpen.value = dropdownOpen.value === orderId ? null : orderId
-}
 </script>
 
 <template>
@@ -446,32 +291,6 @@ const toggleDropdown = (orderId) => {
                       <XCircle class="h-3 w-3" />
                     </button>
 
-                    <!-- More Actions Dropdown -->
-                    <div class="relative">
-                      <button @click.stop="toggleDropdown(order.id)" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1.5 rounded-md text-xs">
-                        <MoreHorizontal class="h-3 w-3" />
-                      </button>
-                      <div v-if="dropdownOpen === order.id" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 border">
-                        <div class="py-1">
-                          <button @click="openStatusModal(order)" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
-                            <RefreshCw class="h-4 w-4 mr-2" />
-                            Update Status
-                          </button>
-                          <button @click="openTrackingModal(order)" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
-                            <Truck class="h-4 w-4 mr-2" />
-                            Update Tracking
-                          </button>
-                          <button v-if="order.payment_status === 'PAID'" @click="openRefundModal(order)" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
-                            <RefundIcon class="h-4 w-4 mr-2" />
-                            Process Refund
-                          </button>
-                          <button @click="openNotificationModal(order)" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
-                            <Mail class="h-4 w-4 mr-2" />
-                            Resend Email
-                          </button>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </td>
               </tr>
@@ -484,100 +303,6 @@ const toggleDropdown = (orderId) => {
           <ShoppingCart class="h-12 w-12 text-gray-300 mx-auto mb-4" />
           <h3 class="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
           <p class="text-gray-500">No orders match your current search criteria.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Status Update Modal -->
-    <div v-if="showStatusModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-96">
-        <h3 class="text-lg font-semibold mb-4">Update Order Status</h3>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">New Status</label>
-          <select v-model="newStatus" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-            <option value="PENDING">Pending</option>
-            <option value="CONFIRMED">Confirmed</option>
-            <option value="PROCESSING">Processing</option>
-            <option value="SHIPPED">Shipped</option>
-            <option value="DELIVERED">Delivered</option>
-            <option value="CANCELLED">Cancelled</option>
-            <option value="REFUNDED">Refunded</option>
-          </select>
-        </div>
-        <div class="flex space-x-3">
-          <button @click="updateOrderStatus" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg">
-            Update Status
-          </button>
-          <button @click="showStatusModal = false" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg">
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tracking Update Modal -->
-    <div v-if="showTrackingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-96">
-        <h3 class="text-lg font-semibold mb-4">Update Tracking Number</h3>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Tracking Number</label>
-          <input v-model="trackingNumber" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Enter tracking number">
-        </div>
-        <div class="flex space-x-3">
-          <button @click="updateTracking" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg">
-            Update Tracking
-          </button>
-          <button @click="showTrackingModal = false" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg">
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Refund Modal -->
-    <div v-if="showRefundModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-96">
-        <h3 class="text-lg font-semibold mb-4">Process Refund</h3>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Refund Amount</label>
-          <input v-model="refundAmount" type="number" step="0.01" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="0.00">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Refund Reason</label>
-          <textarea v-model="refundReason" class="w-full border border-gray-300 rounded-lg px-3 py-2" rows="3" placeholder="Enter refund reason"></textarea>
-        </div>
-        <div class="flex space-x-3">
-          <button @click="processRefund" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-            Process Refund
-          </button>
-          <button @click="showRefundModal = false" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg">
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Notification Modal -->
-    <div v-if="showNotificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-96">
-        <h3 class="text-lg font-semibold mb-4">Resend Notification</h3>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Notification Type</label>
-          <select v-model="notificationType" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-            <option value="">Select notification type</option>
-            <option value="order_confirmation">Order Confirmation</option>
-            <option value="payment_confirmation">Payment Confirmation</option>
-            <option value="shipping_notification">Shipping Notification</option>
-            <option value="delivery_confirmation">Delivery Confirmation</option>
-          </select>
-        </div>
-        <div class="flex space-x-3">
-          <button @click="resendNotification" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-            Send Notification
-          </button>
-          <button @click="showNotificationModal = false" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg">
-            Cancel
-          </button>
         </div>
       </div>
     </div>

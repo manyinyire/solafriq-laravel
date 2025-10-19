@@ -52,6 +52,7 @@ class ProfileController extends Controller
             $user->update([
                 'name' => $validated['name'],
                 'phone_number' => $validated['phone_number'],
+                'phone' => $validated['phone_number'], // Sync both phone columns
                 'avatar' => $validated['avatar'] ?? $user->avatar,
                 'new_email' => $validated['email'],
                 'email_verification_token' => $token,
@@ -66,6 +67,7 @@ class ProfileController extends Controller
         $user->update([
             'name' => $validated['name'],
             'phone_number' => $validated['phone_number'],
+            'phone' => $validated['phone_number'], // Sync both phone columns
             'avatar' => $validated['avatar'] ?? $user->avatar,
             'password' => $validated['password'] ? Hash::make($validated['password']) : $user->password,
         ]);

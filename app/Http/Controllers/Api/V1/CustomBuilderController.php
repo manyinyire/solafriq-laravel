@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Services\SolarSystemBuilderService;
 use App\Models\Product;
+use App\Models\Cart;
+use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
 
 class CustomBuilderController extends Controller
 {
@@ -185,19 +188,24 @@ class CustomBuilderController extends Controller
 
     /**
      * Get products by category for the custom builder
+     * Only returns products that are in stock
      */
     public function getProducts(Request $request): JsonResponse
     {
         $category = $request->input('category');
-        
-        $query = Product::active()->orderBy('sort_order')->orderBy('name');
-        
+
+        // Only get active products with stock > 0
+        $query = Product::active()
+            ->where('stock_quantity', '>', 0)
+            ->orderBy('sort_order')
+            ->orderBy('name');
+
         if ($category) {
             $query->where('category', $category);
         }
-        
+
         $products = $query->get();
-        
+
         // Group products by category
         $groupedProducts = [
             'SOLAR_PANEL' => $products->where('category', 'SOLAR_PANEL')->values(),
@@ -208,7 +216,7 @@ class CustomBuilderController extends Controller
             'CABLES' => $products->where('category', 'CABLES')->values(),
             'ACCESSORIES' => $products->where('category', 'ACCESSORIES')->values(),
         ];
-        
+
         return response()->json($groupedProducts);
     }
 
@@ -225,53 +233,92 @@ class CustomBuilderController extends Controller
         ]);
 
         try {
-            // Get cart from session
-            $cart = Session::get('cart', []);
-            
-            // Calculate total price
-            $totalPrice = 0;
-            $componentDetails = [];
-            
-            foreach ($validated['components'] as $component) {
-                $product = Product::find($component['product_id']);
-                $quantity = $component['quantity'];
-                $subtotal = $product->price * $quantity;
-                $totalPrice += $subtotal;
-                
-                $componentDetails[] = [
-                    'product_id' => $product->id,
-                    'name' => $product->full_name,
-                    'price' => $product->price,
-                    'quantity' => $quantity,
-                    'subtotal' => $subtotal,
-                    'image_url' => $product->image_url,
-                ];
-            }
-            
-            // Add custom system as a single cart item
-            $cartItem = [
-                'id' => 'custom_' . uniqid(),
-                'type' => 'CUSTOM_SYSTEM',
-                'name' => $validated['system_name'],
-                'price' => $totalPrice,
-                'quantity' => 1,
-                'components' => $componentDetails,
-                'image_url' => '/images/custom-system.png',
-            ];
-            
-            $cart[] = $cartItem;
-            Session::put('cart', $cart);
-            
-            return response()->json([
-                'message' => 'Custom system added to cart successfully',
-                'cart_item' => $cartItem,
-                'cart_count' => count($cart),
-            ]);
+            return DB::transaction(function () use ($validated) {
+                // Get or create cart
+                $cart = $this->getCart();
+
+                // Validate stock availability for all components
+                foreach ($validated['components'] as $component) {
+                    $product = Product::find($component['product_id']);
+                    $quantity = $component['quantity'];
+
+                    if ($quantity > $product->stock_quantity) {
+                        return response()->json([
+                            'message' => "Insufficient stock for {$product->name}. Only {$product->stock_quantity} units available.",
+                            'error' => 'INSUFFICIENT_STOCK',
+                            'product' => $product->name,
+                            'requested' => $quantity,
+                            'available' => $product->stock_quantity,
+                        ], 400);
+                    }
+                }
+
+                // Add each component as a separate cart item
+                $addedItems = [];
+                foreach ($validated['components'] as $component) {
+                    $product = Product::find($component['product_id']);
+                    $quantity = $component['quantity'];
+
+                    // Check if item already exists in cart
+                    $existingItem = $cart->items()
+                        ->where('product_id', $product->id)
+                        ->where('item_type', 'custom_component')
+                        ->first();
+
+                    if ($existingItem) {
+                        $newQuantity = $existingItem->quantity + $quantity;
+                        if ($newQuantity > $product->stock_quantity) {
+                            return response()->json([
+                                'message' => "Cannot add more {$product->name}. Stock limit reached.",
+                                'error' => 'INSUFFICIENT_STOCK',
+                            ], 400);
+                        }
+                        $existingItem->update(['quantity' => $newQuantity]);
+                        $addedItems[] = $existingItem;
+                    } else {
+                        $cartItem = $cart->items()->create([
+                            'product_id' => $product->id,
+                            'item_type' => 'custom_component',
+                            'quantity' => $quantity,
+                            'price' => $product->price,
+                            'custom_system_name' => $validated['system_name'],
+                        ]);
+                        $addedItems[] = $cartItem;
+                    }
+                }
+
+                return response()->json([
+                    'message' => 'Custom system added to cart successfully',
+                    'items_added' => count($addedItems),
+                    'cart_count' => $cart->items()->count(),
+                ]);
+            });
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to add to cart',
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get or create cart for current user/session
+     */
+    private function getCart(): Cart
+    {
+        $userId = Auth::id();
+        $sessionId = session()->getId();
+
+        if ($userId) {
+            return Cart::firstOrCreate([
+                'user_id' => $userId,
+                'session_id' => null,
+            ]);
+        }
+
+        return Cart::firstOrCreate([
+            'user_id' => null,
+            'session_id' => $sessionId,
+        ]);
     }
 }

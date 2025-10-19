@@ -89,6 +89,12 @@ const buyNow = () => {
     customer_address: form.value.customer_address,
     payment_method: form.value.payment_method,
     notes: form.value.notes,
+    total: finalTotal.value,
+    is_gift: form.value.is_gift || false,
+    recipient_name: form.value.recipient_name || null,
+    recipient_email: form.value.recipient_email || null,
+    recipient_phone: form.value.recipient_phone || null,
+    recipient_address: form.value.recipient_address || null,
   };
 
   router.post('/checkout/process', orderData, {

@@ -33,7 +33,7 @@ class DashboardController extends Controller
     public function recentOrders(): JsonResponse
     {
         $orders = Auth::user()->orders()
-            ->with(['items.solarSystem'])
+            ->with(['items'])
             ->latest()
             ->take(5)
             ->get();

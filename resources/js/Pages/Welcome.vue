@@ -38,7 +38,8 @@ const props = defineProps({
   canRegister: Boolean,
   laravelVersion: String,
   phpVersion: String,
-  solarSystems: Array
+  solarSystems: Array,
+  builderProducts: Object
 });
 
 // Modern Solutions Section Data
@@ -62,21 +63,42 @@ const filteredSystems = computed(() => {
 // Solar System Builder Data
 const config = ref({
     panels: 4,
-    panelWattage: 450,
+    selectedPanel: null,
     batteries: 2,
-    batteryVoltage: 24,
-    batteryCapacity: 200,
-    inverterSize: 3,
-  });
+    selectedBattery: null,
+    selectedInverter: null,
+});
+
+// Initialize with first available products
+if (props.builderProducts) {
+    if (props.builderProducts.panels && props.builderProducts.panels.length > 0) {
+        config.value.selectedPanel = props.builderProducts.panels[0].id;
+    }
+    if (props.builderProducts.batteries && props.builderProducts.batteries.length > 0) {
+        config.value.selectedBattery = props.builderProducts.batteries[0].id;
+    }
+    if (props.builderProducts.inverters && props.builderProducts.inverters.length > 0) {
+        config.value.selectedInverter = props.builderProducts.inverters[0].id;
+    }
+}
 
 const analysis = computed(() => {
-    const totalSolarPower = config.value.panels * config.value.panelWattage;
-    const totalStorage = (config.value.batteries * config.value.batteryCapacity * config.value.batteryVoltage) / 1000;
+    // Get selected products
+    const selectedPanel = props.builderProducts?.panels?.find(p => p.id === config.value.selectedPanel);
+    const selectedBattery = props.builderProducts?.batteries?.find(b => b.id === config.value.selectedBattery);
+    const selectedInverter = props.builderProducts?.inverters?.find(i => i.id === config.value.selectedInverter);
+
+    const panelWattage = selectedPanel?.power_rating || 450;
+    const batteryCapacity = selectedBattery?.capacity || 200; // kWh for batteries
+    const inverterSize = selectedInverter ? (selectedInverter.power_rating / 1000) : 3; // Convert W to kVA
+
+    const totalSolarPower = config.value.panels * panelWattage;
+    const totalStorage = config.value.batteries * batteryCapacity; // Already in kWh
     const dailyOutput = (totalSolarPower * 5) / 1000; // Assuming 5 hours of peak sun
 
-    const panelCost = config.value.panels * (config.value.panelWattage * 0.8);
-    const batteryCost = config.value.batteries * (config.value.batteryCapacity * config.value.batteryVoltage * 0.5);
-    const inverterCost = config.value.inverterSize * 200;
+    const panelCost = config.value.panels * (selectedPanel?.price || 350);
+    const batteryCost = config.value.batteries * (selectedBattery?.price || 1500);
+    const inverterCost = selectedInverter?.price || 1200;
     const installationCost = 1500;
     const estimatedPrice = panelCost + batteryCost + inverterCost + installationCost;
 
@@ -96,7 +118,7 @@ const analysis = computed(() => {
     if (totalSolarPower >= 2500) canPower.push("Multiple Air Conditioners, Heavy Appliances");
 
     const recommendations = [];
-    if (config.value.inverterSize * 1000 > totalSolarPower * 1.2) {
+    if (inverterSize * 1000 > totalSolarPower * 1.2) {
       recommendations.push("Consider adding more solar panels to maximize inverter utilization");
     }
     if (totalStorage < dailyOutput) {
@@ -122,6 +144,9 @@ const analysis = computed(() => {
       canPower,
       recommendations,
       viability,
+      selectedPanel,
+      selectedBattery,
+      selectedInverter,
     };
 });
 
@@ -190,7 +215,7 @@ const testimonials = [
             </div>
 
             <div class="flex flex-col sm:flex-row gap-4">
-                <a href="/products" class="inline-flex items-center bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-4 rounded-full font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                <a href="#solar-packages" class="inline-flex items-center bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-4 rounded-full font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
                     Explore Packages
                     <ArrowRight class="ml-2 h-5 w-5" />
                 </a>
@@ -236,7 +261,7 @@ const testimonials = [
     </section>
 
     <!-- Modern Solutions Section -->
-    <section class="py-24 bg-gradient-to-br from-gray-50 via-white to-blue-50 relative overflow-hidden">
+    <section id="solar-packages" class="py-24 bg-gradient-to-br from-gray-50 via-white to-blue-50 relative overflow-hidden">
       <div class="absolute inset-0 opacity-5">
         <div class="absolute top-20 left-10 w-72 h-72 bg-orange-500 rounded-full blur-3xl"></div>
         <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
@@ -365,25 +390,6 @@ const testimonials = [
             <p class="text-gray-500 mb-6">Try adjusting your filter or check back later for new solutions.</p>
             <button @click="activeFilter = 'all'" class="border-2 border-gray-200 px-4 py-2 rounded-full font-semibold">View All Systems</button>
         </div>
-
-        <div class="text-center">
-          <div class="bg-gradient-to-r from-orange-500 to-yellow-500 rounded-3xl p-8 text-white shadow-2xl">
-            <h3 class="text-3xl font-bold mb-4">Ready to Go Solar?</h3>
-            <p class="text-xl mb-6 opacity-90">
-              Join thousands of satisfied customers who have made the switch to clean energy
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/products" class="inline-flex items-center bg-white text-orange-600 hover:bg-gray-100 shadow-lg px-6 py-3 rounded-full font-semibold">
-                <Zap class="w-5 h-5 mr-2" />
-                View All Solutions
-              </a>
-              <a href="/contact" class="inline-flex items-center border-white text-white hover:bg-white hover:text-orange-600 border-2 px-6 py-3 rounded-full font-semibold">
-                Get Free Consultation
-                <ArrowRight class="w-5 h-5 ml-2" />
-              </a>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -425,13 +431,15 @@ const testimonials = [
                 </div>
 
                 <div>
-                  <label class="text-sm font-medium text-gray-700 mb-2 block">Panel Wattage</label>
-                  <select v-model.number="config.panelWattage" class="w-full border-gray-300 rounded-md shadow-sm">
-                      <option value="300">300W</option>
-                      <option value="400">400W</option>
-                      <option value="450">450W</option>
-                      <option value="500">500W</option>
+                  <label class="text-sm font-medium text-gray-700 mb-2 block">Panel Type</label>
+                  <select v-model.number="config.selectedPanel" class="w-full border-gray-300 rounded-md shadow-sm">
+                      <option v-for="panel in builderProducts?.panels" :key="panel.id" :value="panel.id">
+                        {{ panel.brand }} {{ panel.model }} - {{ panel.power_rating }}W ({{ panel.stock_quantity }} in stock)
+                      </option>
                   </select>
+                  <p v-if="analysis.selectedPanel" class="text-xs text-gray-500 mt-1">
+                    ${{ parseFloat(analysis.selectedPanel.price).toFixed(2) }} each
+                  </p>
                 </div>
 
                 <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
@@ -467,24 +475,16 @@ const testimonials = [
                             <span>16</span>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-sm font-medium text-gray-700 mb-2 block">Battery Voltage</label>
-                            <select v-model.number="config.batteryVoltage" class="w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="12">12V</option>
-                                <option value="24">24V</option>
-                                <option value="48">48V</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-700 mb-2 block">Capacity (Ah)</label>
-                            <select v-model.number="config.batteryCapacity" class="w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="100">100Ah</option>
-                                <option value="150">150Ah</option>
-                                <option value="200">200Ah</option>
-                                <option value="250">250Ah</option>
-                            </select>
-                        </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Battery Type</label>
+                        <select v-model.number="config.selectedBattery" class="w-full border-gray-300 rounded-md shadow-sm">
+                            <option v-for="battery in builderProducts?.batteries" :key="battery.id" :value="battery.id">
+                              {{ battery.brand }} {{ battery.model }} - {{ battery.capacity }}kWh ({{ battery.stock_quantity }} in stock)
+                            </option>
+                        </select>
+                        <p v-if="analysis.selectedBattery" class="text-xs text-gray-500 mt-1">
+                          ${{ parseFloat(analysis.selectedBattery.price).toFixed(2) }} each
+                        </p>
                     </div>
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div class="text-sm text-blue-800">
@@ -503,13 +503,15 @@ const testimonials = [
                 </div>
                 <div class="p-6">
                     <div>
-                        <label class="text-sm font-medium text-gray-700 mb-2 block">Inverter Size (kVA)</label>
-                        <select v-model.number="config.inverterSize" class="w-full border-gray-300 rounded-md shadow-sm">
-                            <option value="1">1 kVA</option>
-                            <option value="3">3 kVA</option>
-                            <option value="5">5 kVA</option>
-                            <option value="10">10 kVA</option>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Inverter Type</label>
+                        <select v-model.number="config.selectedInverter" class="w-full border-gray-300 rounded-md shadow-sm">
+                            <option v-for="inverter in builderProducts?.inverters" :key="inverter.id" :value="inverter.id">
+                              {{ inverter.brand }} {{ inverter.model }} - {{ (inverter.power_rating / 1000).toFixed(1) }}kVA ({{ inverter.stock_quantity }} in stock)
+                            </option>
                         </select>
+                        <p v-if="analysis.selectedInverter" class="text-xs text-gray-500 mt-1">
+                          ${{ parseFloat(analysis.selectedInverter.price).toFixed(2) }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -571,21 +573,19 @@ const testimonials = [
                     <h3 class="font-bold">Your Custom System</h3>
                 </div>
                 <div class="p-6 space-y-6">
-                    <div class="text-center">
-                        <div class="text-4xl font-bold text-gray-900 mb-2">
-                            ${{ analysis.estimatedPrice.toLocaleString() }}
-                        </div>
-                        <div class="text-sm text-gray-600">Estimated price including installation</div>
+                    <div class="text-center bg-gradient-to-r from-orange-50 to-yellow-50 p-6 rounded-xl border-2 border-orange-200">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Get a Custom Quote</h4>
+                        <p class="text-sm text-gray-600">Configure your perfect system and request a personalized quote tailored to your needs</p>
                     </div>
 
                     <div>
-                        <h3 class="font-semibold text-gray-900 mb-3">Components:</h3>
+                        <h3 class="font-semibold text-gray-900 mb-3">Your Configuration:</h3>
                         <div class="space-y-2">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-2">
                                     <CheckCircle class="h-4 w-4 text-green-500" />
                                     <span class="text-sm">
-                                        {{ config.panels }} Solar Panels ({{ config.panelWattage }}W each, {{ analysis.totalSolarPower }}W total)
+                                        {{ config.panels }}x {{ analysis.selectedPanel ? `${analysis.selectedPanel.brand} ${analysis.selectedPanel.model}` : 'Solar Panels' }} ({{ analysis.totalSolarPower }}W total)
                                     </span>
                                 </div>
                             </div>
@@ -593,14 +593,14 @@ const testimonials = [
                                 <div class="flex items-center space-x-2">
                                     <CheckCircle class="h-4 w-4 text-green-500" />
                                     <span class="text-sm">
-                                        {{ config.batteries }} Batteries ({{ config.batteryCapacity }}Ah, {{ config.batteryVoltage }}V each)
+                                        {{ config.batteries }}x {{ analysis.selectedBattery ? `${analysis.selectedBattery.brand} ${analysis.selectedBattery.model}` : 'Batteries' }} ({{ analysis.totalStorage.toFixed(1) }}kWh total)
                                     </span>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-2">
                                     <CheckCircle class="h-4 w-4 text-green-500" />
-                                    <span class="text-sm">{{ config.inverterSize }}kVA Inverter</span>
+                                    <span class="text-sm">{{ analysis.selectedInverter ? `${analysis.selectedInverter.brand} ${analysis.selectedInverter.model}` : 'Inverter' }}</span>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between">
@@ -621,14 +621,15 @@ const testimonials = [
                     <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
                         <span class="font-semibold text-green-800">System Viability:</span>
                         <span :class="['px-2 py-1 rounded-full text-xs font-bold text-white', analysis.viability === 'ready' ? 'bg-green-500' : analysis.viability === 'needs-adjustment' ? 'bg-yellow-500' : 'bg-red-500']">
-                            {{ analysis.viability === 'ready' ? "Ready to Order" : analysis.viability === 'needs-adjustment' ? "Needs Adjustment" : "Insufficient Power" }}
+                            {{ analysis.viability === 'ready' ? "Ready for Quote" : analysis.viability === 'needs-adjustment' ? "Needs Adjustment" : "Insufficient Power" }}
                         </span>
                     </div>
 
-                    <button :disabled="analysis.viability === 'insufficient'" class="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
-                        <ShoppingCart class="h-5 w-5 mr-2 inline-block" />
-                        Add Custom System to Cart
-                    </button>
+                    <a :href="`/custom-builder?panel=${config.selectedPanel}&battery=${config.selectedBattery}&inverter=${config.selectedInverter}&panelQty=${config.panels}&batteryQty=${config.batteries}`" class="block w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 text-center">
+                        <Quote class="h-5 w-5 mr-2 inline-block" />
+                        Request Custom Quote
+                    </a>
+                    <p class="text-xs text-center text-gray-500">Continue to full builder to refine your system and request a detailed quote</p>
                 </div>
             </div>
           </div>

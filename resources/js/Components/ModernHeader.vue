@@ -129,12 +129,9 @@ const navItems = computed(() => {
                   {{ item.title }}
                   <ChevronDown class="h-4 w-4 ml-1" />
                 </button>
-                <div class="absolute top-full left-0 w-[500px] bg-white shadow-lg rounded-lg p-6 hidden group-hover:grid gap-3 z-50">
-                  <Link v-for="subItem in item.items" :key="subItem.title" :href="subItem.href" class="block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors hover:bg-orange-50 hover:text-orange-600 focus:bg-orange-50 focus:text-orange-600">
-                    <div class="text-sm font-medium leading-none">{{ subItem.title }}</div>
-                    <p class="line-clamp-2 text-sm leading-snug text-gray-500">
-                      {{ subItem.description }}
-                    </p>
+                <div class="absolute top-full left-0 w-[250px] bg-white shadow-lg rounded-lg p-3 hidden group-hover:grid gap-1 z-50">
+                  <Link v-for="subItem in item.items" :key="subItem.title" :href="subItem.href" class="block select-none rounded-lg px-3 py-2 leading-none no-underline outline-none transition-colors hover:bg-orange-50 hover:text-orange-600 focus:bg-orange-50 focus:text-orange-600">
+                    <div class="text-sm font-medium">{{ subItem.title }}</div>
                   </Link>
                 </div>
               </li>
