@@ -36,7 +36,14 @@ const fetchProducts = async () => {
   loading.value = true;
   try {
     const response = await axios.get('/custom-builder/products');
-    products.value = response.data;
+    // Handle both new standardized response and old response format
+    const data = response.data?.data || response.data;
+    if (data && typeof data === 'object') {
+      products.value = data;
+    } else {
+      console.error('Invalid products data format:', data);
+      alert('Failed to load products. Please try again.');
+    }
   } catch (error) {
     console.error('Failed to load products:', error);
     alert('Failed to load products. Please try again.');
@@ -272,13 +279,13 @@ const formatCurrency = (amount) => {
                 <p class="text-gray-600">Loading products...</p>
               </div>
 
-              <div v-else-if="products[activeCategory].length === 0" class="text-center py-12">
+              <div v-else-if="!products[activeCategory] || products[activeCategory].length === 0" class="text-center py-12">
                 <p class="text-gray-600">No products available in this category.</p>
               </div>
 
               <div v-else class="grid md:grid-cols-2 gap-4">
                 <div
-                  v-for="product in products[activeCategory]"
+                  v-for="product in products[activeCategory] || []"
                   :key="product.id"
                   class="border rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
