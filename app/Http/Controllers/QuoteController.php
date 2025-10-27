@@ -237,33 +237,26 @@ class QuoteController extends Controller
     private function convertQuoteToOrder(Quote $quote): Order
     {
         $order = Order::create([
-            'order_number' => $this->generateOrderNumber(),
             'user_id' => $quote->user_id,
-            'status' => 'pending',
-            'payment_status' => 'pending',
-            'payment_method' => 'pending',
-            'subtotal' => $quote->subtotal,
-            'tax' => $quote->tax,
-            'discount' => $quote->discount,
-            'total' => $quote->total,
-            'shipping_address' => $quote->customer_address,
-            'billing_address' => $quote->customer_address,
             'customer_name' => $quote->customer_name,
             'customer_email' => $quote->customer_email,
             'customer_phone' => $quote->customer_phone,
-            'notes' => $quote->notes,
+            'customer_address' => $quote->customer_address,
+            'total_amount' => $quote->total,
+            'status' => 'PENDING',
+            'payment_status' => 'PENDING',
+            'payment_method' => 'INSTALLMENT',
+            'notes' => $quote->notes . "\n\nConverted from quote: " . $quote->quote_number,
         ]);
 
         // Create order items from quote items
         foreach ($quote->items as $quoteItem) {
             $order->items()->create([
-                'solar_system_id' => $quoteItem->solar_system_id,
-                'product_id' => $quoteItem->product_id,
-                'item_type' => $quoteItem->item_type,
-                'item_name' => $quoteItem->item_name,
+                'name' => $quoteItem->item_name,
+                'description' => $quoteItem->item_description ?? '',
                 'quantity' => $quoteItem->quantity,
-                'unit_price' => $quoteItem->unit_price,
-                'total_price' => $quoteItem->total_price,
+                'price' => $quoteItem->total_price,
+                'type' => $quoteItem->item_type,
             ]);
         }
 

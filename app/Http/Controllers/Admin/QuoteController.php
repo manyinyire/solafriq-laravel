@@ -61,6 +61,94 @@ class QuoteController extends Controller
     }
 
     /**
+     * Admin accepts quote on behalf of client (converts to order)
+     */
+    public function acceptOnBehalf(Request $request, $id)
+    {
+        $quote = Quote::with(['items', 'user'])->findOrFail($id);
+
+        if (!$quote->canBeAccepted() && $quote->status !== 'pending') {
+            return back()->withErrors(['error' => 'This quote cannot be accepted.']);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $quote->update([
+                'status' => 'accepted',
+                'accepted_at' => now(),
+            ]);
+
+            // Convert quote to order
+            $order = $this->convertQuoteToOrder($quote);
+
+            // Auto-approve the order and create invoice
+            $order->update([
+                'status' => 'CONFIRMED',
+                'payment_status' => 'PENDING',
+            ]);
+
+            // Create invoice for the order
+            $this->createInvoiceForOrder($order);
+
+            DB::commit();
+
+            return redirect()->route('admin.orders.show', $order->id)
+                ->with('success', 'Quote accepted! Order and invoice created.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Admin quote acceptance error: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to accept quote. Please try again.']);
+        }
+    }
+
+    /**
+     * Convert quote to order
+     */
+    private function convertQuoteToOrder(Quote $quote): \App\Models\Order
+    {
+        $order = \App\Models\Order::create([
+            'user_id' => $quote->user_id,
+            'customer_name' => $quote->customer_name,
+            'customer_email' => $quote->customer_email,
+            'customer_phone' => $quote->customer_phone,
+            'customer_address' => $quote->customer_address,
+            'total_amount' => $quote->total,
+            'status' => 'PENDING',
+            'payment_status' => 'PENDING',
+            'payment_method' => 'INSTALLMENT',
+            'notes' => $quote->notes . "\n\nConverted from quote: " . $quote->quote_number,
+        ]);
+
+        // Create order items from quote items
+        foreach ($quote->items as $quoteItem) {
+            $order->items()->create([
+                'name' => $quoteItem->item_name,
+                'description' => $quoteItem->item_description ?? '',
+                'quantity' => $quoteItem->quantity,
+                'price' => $quoteItem->total_price,
+                'type' => $quoteItem->item_type,
+            ]);
+        }
+
+        // Link order to quote
+        $quote->update(['converted_order_id' => $order->id]);
+
+        return $order;
+    }
+
+    /**
+     * Create invoice for order
+     */
+    private function createInvoiceForOrder(\App\Models\Order $order)
+    {
+        // Create invoice using the InvoiceGeneratorService
+        $invoiceService = app(\App\Services\InvoiceGeneratorService::class);
+        $invoiceService->createInvoiceForOrder($order);
+    }
+
+    /**
      * Update quote details
      */
     public function update(Request $request, $id)

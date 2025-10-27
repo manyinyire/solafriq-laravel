@@ -101,51 +101,30 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get recent activity
+     * Get recent activity - shows only recent orders
      */
     private function getRecentActivity(): array
     {
-        $recentUsers = User::latest()
-            ->limit(5)
-            ->get()
-            ->map(function ($user) {
-                return [
-                    'type' => 'user_registered',
-                    'title' => 'New User Registration',
-                    'description' => $user->name . ' joined the platform',
-                    'created_at' => $user->created_at,
-                    'user' => [
-                        'name' => $user->name,
-                        'email' => $user->email,
-                    ]
-                ];
-            });
-
-        $recentOrders = Order::with('user')
+        $recentOrders = Order::with(['user', 'items'])
             ->latest()
-            ->limit(5)
+            ->limit(10)
             ->get()
             ->map(function ($order) {
                 return [
-                    'type' => 'order_created',
-                    'title' => 'New Order',
-                    'description' => 'Order #' . $order->id . ' placed by ' . ($order->user ? $order->user->name : $order->customer_name),
+                    'type' => 'order',
+                    'id' => $order->id,
+                    'title' => 'Order #' . $order->id,
+                    'description' => $order->customer_name . ' - $' . number_format($order->total_amount, 2),
+                    'status' => $order->status,
+                    'payment_status' => $order->payment_status,
+                    'customer_name' => $order->customer_name,
+                    'total_amount' => $order->total_amount,
                     'created_at' => $order->created_at,
-                    'order' => [
-                        'id' => $order->id,
-                        'amount' => $order->total_amount,
-                        'status' => $order->status,
-                    ]
+                    'item_count' => $order->items->count(),
                 ];
             });
 
-        // Combine and sort by date
-        $activities = $recentUsers->concat($recentOrders)
-            ->sortByDesc('created_at')
-            ->take(10)
-            ->values();
-
-        return $activities->toArray();
+        return $recentOrders->toArray();
     }
 
     /**
@@ -174,17 +153,31 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get system status breakdown
+     * Get order status breakdown instead of system status
      */
     private function getSystemStatusBreakdown(): array
     {
-        // Since SolarSystem only has is_active, we'll show active vs inactive
-        $activeCount = SolarSystem::where('is_active', 1)->count();
-        $inactiveCount = SolarSystem::where('is_active', 0)->count();
+        // Get order status breakdown
+        $orderStatuses = Order::select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->get()
+            ->keyBy('status');
+
+        $labels = $orderStatuses->pluck('status')->toArray();
+        $data = $orderStatuses->pluck('count')->toArray();
+
+        // Fallback to totals if no status data
+        if (empty($labels)) {
+            $totalOrders = Order::count();
+            return [
+                'labels' => ['Orders'],
+                'data' => [$totalOrders],
+            ];
+        }
 
         return [
-            'labels' => ['Active', 'Inactive'],
-            'data' => [$activeCount, $inactiveCount],
+            'labels' => $labels,
+            'data' => $data,
         ];
     }
 

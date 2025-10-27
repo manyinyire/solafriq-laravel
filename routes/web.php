@@ -332,6 +332,7 @@ Route::middleware([
         Route::put('/quotes/{id}', [App\Http\Controllers\Admin\QuoteController::class, 'update'])->name('admin.quotes.update');
         Route::put('/quotes/{id}/items', [App\Http\Controllers\Admin\QuoteController::class, 'updateItems'])->name('admin.quotes.update-items');
         Route::post('/quotes/{id}/send', [App\Http\Controllers\Admin\QuoteController::class, 'send'])->name('admin.quotes.send');
+        Route::post('/quotes/{id}/accept', [App\Http\Controllers\Admin\QuoteController::class, 'acceptOnBehalf'])->name('admin.quotes.accept');
         Route::get('/quotes/{id}/pdf', [App\Http\Controllers\Admin\QuoteController::class, 'downloadPDF'])->name('admin.quotes.pdf');
         Route::delete('/quotes/{id}', [App\Http\Controllers\Admin\QuoteController::class, 'destroy'])->name('admin.quotes.destroy');
     });
