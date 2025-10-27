@@ -128,7 +128,7 @@ class WarrantyController extends BaseController
                 'per_page' => $claims->perPage(),
                 'total' => $claims->total(),
             ]
-        ]);
+        );
     }
 
     public function updateClaim(Request $request, WarrantyClaim $warrantyClaim): JsonResponse
