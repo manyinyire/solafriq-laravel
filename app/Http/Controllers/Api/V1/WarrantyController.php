@@ -179,8 +179,8 @@ class WarrantyController extends BaseController
 
         $orders = $this->warrantyService->getEligibleOrdersForWarranty();
 
-        return response()->json([
-            'data' => $orders->map(function ($order) {
+        return $this->successResponse(
+            $orders->map(function ($order) {
                 return [
                     'id' => $order->id,
                     'customer_name' => $order->customer_name,
@@ -191,8 +191,8 @@ class WarrantyController extends BaseController
                     'created_at' => $order->created_at,
                     'items_count' => $order->items->count(),
                 ];
-            }),
-        ]);
+            })
+        );
     }
 
     /**
@@ -211,16 +211,12 @@ class WarrantyController extends BaseController
         try {
             $warranty = $this->warrantyService->manuallyCreateWarranty($order, $validated);
 
-            return response()->json([
-                'success' => true,
-                'data' => new WarrantyResource($warranty),
-                'message' => 'Warranty created successfully',
-            ], 201);
+            return $this->successResponse(
+                new WarrantyResource($warranty),
+                'Warranty created successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 
@@ -251,8 +247,6 @@ class WarrantyController extends BaseController
 
         $stats = $this->warrantyService->getWarrantyStatistics();
 
-        return response()->json([
-            'data' => $stats,
-        ]);
+        return $this->successResponse($stats);
     }
 }
