@@ -61,6 +61,9 @@ class CheckoutController extends Controller
             return back()->withErrors(['error' => 'Your cart is empty.']);
         }
 
+        // Load cart items with their relationships
+        $cartItems = $cart->items()->with(['product', 'solarSystem'])->get();
+
         DB::beginTransaction();
 
         try {
@@ -84,7 +87,7 @@ class CheckoutController extends Controller
             ]);
 
             // Create order items
-            foreach ($cart->items as $cartItem) {
+            foreach ($cartItems as $cartItem) {
                 // Get item details based on type
                 $itemName = '';
                 $itemDescription = '';
