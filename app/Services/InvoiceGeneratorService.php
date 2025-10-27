@@ -239,4 +239,12 @@ class InvoiceGeneratorService
             ]
         ];
     }
+
+    /**
+     * Create invoice for an order (wrapper for generateInvoice)
+     */
+    public function createInvoiceForOrder(Order $order): Invoice
+    {
+        return $this->generateInvoice($order);
+    }
 }

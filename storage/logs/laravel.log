@@ -9844,3 +9844,8 @@ Did you mean one of these?
 [2025-10-27 07:34:41] local.INFO: Order status updated {"order_id":13,"old_status":"SCHEDULED","new_status":"INSTALLED"} 
 [2025-10-27 07:58:36] local.INFO: Warranty manually created {"warranty_id":3,"order_id":13,"serial_number":"WR202500001300017936"} 
 [2025-10-27 11:35:05] local.INFO: Warranty manually created {"warranty_id":4,"order_id":1,"serial_number":"WR20250000010001D142"} 
+[2025-10-27 11:49:21] local.ERROR: Admin quote acceptance error: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'status' at row 1 (Connection: mysql, SQL: update `orders` set `status` = CONFIRMED, `orders`.`updated_at` = 2025-10-27 11:49:21 where `id` = 14)  
+[2025-10-27 11:49:26] local.ERROR: Admin quote acceptance error: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'status' at row 1 (Connection: mysql, SQL: update `orders` set `status` = CONFIRMED, `orders`.`updated_at` = 2025-10-27 11:49:26 where `id` = 15)  
+[2025-10-27 11:50:12] local.ERROR: Admin quote acceptance error: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'status' at row 1 (Connection: mysql, SQL: update `orders` set `status` = CONFIRMED, `orders`.`updated_at` = 2025-10-27 11:50:12 where `id` = 16)  
+[2025-10-27 11:50:20] local.ERROR: Admin quote acceptance error: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'status' at row 1 (Connection: mysql, SQL: update `orders` set `status` = CONFIRMED, `orders`.`updated_at` = 2025-10-27 11:50:20 where `id` = 17)  
+[2025-10-27 11:50:31] local.ERROR: Admin quote acceptance error: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'status' at row 1 (Connection: mysql, SQL: update `orders` set `status` = CONFIRMED, `orders`.`updated_at` = 2025-10-27 11:50:31 where `id` = 18)  
