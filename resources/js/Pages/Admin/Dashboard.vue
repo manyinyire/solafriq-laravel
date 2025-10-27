@@ -420,22 +420,29 @@ const systemStatusChartData = computed(() => {
           </div>
         </div>
 
-        <!-- System Status Chart -->
+        <!-- Order Status Breakdown -->
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center justify-between mb-6">
             <div class="flex items-center">
               <PieChart class="h-5 w-5 text-gray-400 mr-3" />
-              <h3 class="text-lg font-semibold text-gray-900">System Status</h3>
+              <h3 class="text-lg font-semibold text-gray-900">Order Status Distribution</h3>
             </div>
-            <button class="text-orange-600 hover:text-orange-700 text-sm font-medium">
-              View All
-            </button>
+            <a href="/admin/orders" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
+              View Orders
+            </a>
           </div>
           <div class="h-80 flex items-center justify-center">
             <div class="text-center">
               <PieChart class="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <p class="text-gray-500">Chart will display after installing vue-chartjs</p>
-              <p class="text-sm text-gray-400">Run: npm install vue-chartjs chart.js</p>
+              <p class="text-gray-500">Order status breakdown</p>
+              <p class="text-sm text-gray-400">Install vue-chartjs for visual charts</p>
+              <!-- Simple status list as fallback -->
+              <div v-if="dashboardData.system_status?.labels" class="mt-4 text-left space-y-2">
+                <div v-for="(label, idx) in dashboardData.system_status.labels" :key="idx" class="flex justify-between items-center px-4 py-2 bg-gray-50 rounded">
+                  <span class="text-sm font-medium text-gray-700">{{ label }}</span>
+                  <span class="text-sm font-bold text-orange-600">{{ dashboardData.system_status.data[idx] }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -456,20 +463,32 @@ const systemStatusChartData = computed(() => {
         </div>
         <div class="p-6">
           <div v-if="dashboardData.recent_activity?.length" class="space-y-4">
-            <div
+            <a
               v-for="(activity, index) in dashboardData.recent_activity"
               :key="index"
-              class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+              :href="activity.type === 'order' ? `/admin/orders/${activity.id}` : '#'"
+              class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
             >
               <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <component :is="getActivityIcon(activity.type)" class="h-4 w-4 text-orange-600" />
+                <component :is="activity.type === 'order' ? Package : Activity" class="h-4 w-4 text-orange-600" />
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900">{{ activity.title }}</p>
                 <p class="text-sm text-gray-600">{{ activity.description }}</p>
-                <p class="text-xs text-gray-500 mt-1">{{ formatDate(activity.created_at) }}</p>
+                <div v-if="activity.type === 'order'" class="flex items-center space-x-2 mt-1">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                    :class="{
+                      'bg-yellow-100 text-yellow-800': activity.status === 'PENDING',
+                      'bg-blue-100 text-blue-800': activity.status === 'CONFIRMED',
+                      'bg-green-100 text-green-800': activity.status === 'DELIVERED',
+                      'bg-purple-100 text-purple-800': activity.status === 'INSTALLED',
+                    }"
+                  >{{ activity.status }}</span>
+                  <span class="text-xs text-gray-500">{{ formatDate(activity.created_at) }}</span>
+                </div>
+                <p v-else class="text-xs text-gray-500 mt-1">{{ formatDate(activity.created_at) }}</p>
               </div>
-            </div>
+            </a>
           </div>
           <div v-else class="text-center py-8">
             <Activity class="h-12 w-12 text-gray-300 mx-auto mb-4" />
