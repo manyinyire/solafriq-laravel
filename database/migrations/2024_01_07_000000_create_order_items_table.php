@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('price', 12, 2);
             $table->integer('quantity');
             $table->string('image_url')->nullable();
-            $table->enum('type', ['solar_system', 'product', 'custom_package', 'custom_system']);
+            $table->enum('type', ['solar_system', 'product', 'custom_package', 'custom_system', 'custom_component']);
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
