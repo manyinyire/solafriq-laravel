@@ -219,6 +219,10 @@ class WarrantyService
     {
         $order->load('items');
         
+        if ($order->items->isEmpty()) {
+            return 'Warranty for Order #' . $order->id;
+        }
+        
         if ($order->items->count() === 1) {
             return $order->items->first()->name;
         }

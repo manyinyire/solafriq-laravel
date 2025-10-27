@@ -9842,3 +9842,4 @@ Did you mean one of these?
 [2025-10-27 07:34:41] local.INFO: Order installed email with warranty sent {"order_id":13,"customer_email":"MANYINYIRE2@GMAIL.COM","warranties_count":0} 
 [2025-10-27 07:34:41] local.INFO: Status update email sent {"order_id":13,"old_status":"SCHEDULED","new_status":"INSTALLED"} 
 [2025-10-27 07:34:41] local.INFO: Order status updated {"order_id":13,"old_status":"SCHEDULED","new_status":"INSTALLED"} 
+[2025-10-27 07:58:36] local.INFO: Warranty manually created {"warranty_id":3,"order_id":13,"serial_number":"WR202500001300017936"} 
