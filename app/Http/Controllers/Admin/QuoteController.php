@@ -111,7 +111,7 @@ class QuoteController extends Controller
             'customer_phone' => $quote->customer_phone,
             'customer_address' => $quote->customer_address,
             'total_amount' => $quote->total,
-            'status' => 'PENDING',
+            'status' => 'PENDING', // Valid enum value
             'payment_status' => 'PENDING',
             'payment_method' => 'INSTALLMENT',
             'notes' => $quote->notes . "\n\nConverted from quote: " . $quote->quote_number,

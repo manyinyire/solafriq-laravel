@@ -58,7 +58,7 @@ class DashboardController extends Controller
 
         // Pending installations (orders that are confirmed but not yet delivered)
         $pendingInstallations = Order::where('status', 'PENDING')
-            ->orWhere('status', 'CONFIRMED')
+            ->orWhere('status', 'PROCESSING')
             ->count();
 
         // Monthly revenue (from invoices)
