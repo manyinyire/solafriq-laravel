@@ -223,11 +223,16 @@ class WarrantyService
             return 'Warranty for Order #' . $order->id;
         }
         
+        $firstItem = $order->items->first();
+        if (!$firstItem || !$firstItem->name) {
+            return 'Warranty for Order #' . $order->id;
+        }
+        
         if ($order->items->count() === 1) {
-            return $order->items->first()->name;
+            return $firstItem->name;
         }
 
-        return $order->items->first()->name . ' + ' . ($order->items->count() - 1) . ' more items';
+        return $firstItem->name . ' + ' . ($order->items->count() - 1) . ' more items';
     }
 
     /**
