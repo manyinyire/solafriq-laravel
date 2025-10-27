@@ -9828,3 +9828,17 @@ Did you mean one of these?
 #67 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
 #68 C:\\Users\\PRO\\Documents\\GitHub\\solafriq-laravel\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\PRO\\\\Do...')
 #69 {main}","user_id":null,"cart_id":5} 
+[2025-10-27 07:33:50] local.INFO: Invoice generated {"invoice_id":3,"order_id":13,"total":54233.25} 
+[2025-10-27 07:33:50] local.WARNING: Failed to create warranties for order {"order_id":13,"error":"Cannot create warranties for unpaid orders"} 
+[2025-10-27 07:33:50] local.INFO: Order approved email with invoice sent {"order_id":13,"customer_email":"MANYINYIRE2@GMAIL.COM","invoice_id":3} 
+[2025-10-27 07:33:50] local.INFO: Status update email sent {"order_id":13,"old_status":"PENDING","new_status":"PROCESSING"} 
+[2025-10-27 07:33:50] local.INFO: Order status updated {"order_id":13,"old_status":"PENDING","new_status":"PROCESSING"} 
+[2025-10-27 07:34:10] local.INFO: Payment confirmation email with invoice sent {"order_id":13,"customer_email":"MANYINYIRE2@GMAIL.COM","invoice_id":3} 
+[2025-10-27 07:34:10] local.INFO: Payment confirmed by admin {"order_id":13,"payment_method":"CASH","transaction_reference":null} 
+[2025-10-27 07:34:30] local.INFO: Installation scheduled email sent {"order_id":13,"installation_date":"2025-10-28T09:34","customer_email":"MANYINYIRE2@GMAIL.COM"} 
+[2025-10-27 07:34:30] local.INFO: Installation scheduled {"order_id":13,"installation_date":"2025-10-28T09:34"} 
+[2025-10-27 07:34:41] local.INFO: Warranties created for order {"order_id":13,"warranty_count":0} 
+[2025-10-27 07:34:41] local.INFO: Warranties activated for order {"order_id":13,"warranty_count":0} 
+[2025-10-27 07:34:41] local.INFO: Order installed email with warranty sent {"order_id":13,"customer_email":"MANYINYIRE2@GMAIL.COM","warranties_count":0} 
+[2025-10-27 07:34:41] local.INFO: Status update email sent {"order_id":13,"old_status":"SCHEDULED","new_status":"INSTALLED"} 
+[2025-10-27 07:34:41] local.INFO: Order status updated {"order_id":13,"old_status":"SCHEDULED","new_status":"INSTALLED"} 
