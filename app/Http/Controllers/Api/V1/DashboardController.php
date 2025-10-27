@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\InstallmentPlan;
 use App\Models\Warranty;
@@ -11,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class DashboardController extends Controller
+class DashboardController extends BaseController
 {
     public function stats(): JsonResponse
     {
@@ -27,18 +26,23 @@ class DashboardController extends Controller
             'active_warranties' => $user->warranties()->where('status', 'ACTIVE')->count(),
         ];
 
-        return response()->json($stats);
+        return $this->successResponse($stats);
     }
 
     public function recentOrders(): JsonResponse
     {
         $orders = Auth::user()->orders()
-            ->with(['items'])
+            ->with([
+                'items.product',
+                'items.solarSystem',
+                'invoice',
+                'warranties'
+            ])
             ->latest()
             ->take(5)
             ->get();
 
-        return response()->json($orders);
+        return $this->successResponse($orders);
     }
 
     public function installmentSummary(): JsonResponse
@@ -59,7 +63,7 @@ class DashboardController extends Controller
             'upcoming_payments' => $installments->flatMap->payments->take(3),
         ];
 
-        return response()->json($summary);
+        return $this->successResponse($summary);
     }
 
     public function warrantySummary(): JsonResponse
@@ -81,7 +85,7 @@ class DashboardController extends Controller
                 ->get(),
         ];
 
-        return response()->json($summary);
+        return $this->successResponse($summary);
     }
 
     public function adminOverview(): JsonResponse

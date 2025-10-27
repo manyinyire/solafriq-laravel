@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\ConfirmPaymentRequest;
 use App\Http\Requests\ScheduleInstallationRequest;
 use App\Http\Requests\StoreOrderRequest;
@@ -15,7 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class OrderController extends Controller
+class OrderController extends BaseController
 {
     public function __construct(
         private OrderProcessingService $orderService
@@ -66,16 +65,16 @@ class OrderController extends Controller
 
         $orders = $query->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'success' => true,
-            'data' => OrderResource::collection($orders->items()),
-            'meta' => [
+        return $this->successResponse(
+            OrderResource::collection($orders->items()),
+            null,
+            [
                 'current_page' => $orders->currentPage(),
                 'last_page' => $orders->lastPage(),
                 'per_page' => $orders->perPage(),
                 'total' => $orders->total(),
-            ],
-        ]);
+            ]
+        );
     }
 
     /**
@@ -86,17 +85,15 @@ class OrderController extends Controller
         try {
             $order = $this->orderService->createOrder($request->validated(), $request->user());
 
-            return response()->json([
-                'success' => true,
-                'data' => new OrderResource($order),
-                'message' => 'Order created successfully',
-            ], 201);
+            return $this->successResponse(
+                new OrderResource($order),
+                'Order created successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create order',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse(
+                'Failed to create order: ' . $e->getMessage(),
+                500
+            );
         }
     }
 
@@ -107,15 +104,12 @@ class OrderController extends Controller
     {
         // Ensure user can only see their own orders (unless admin)
         if (!$request->user()->isAdmin() && $order->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return $this->errorResponse('Unauthorized', 403);
         }
 
         $order->load(['items', 'user', 'invoice', 'warranties']);
 
-        return response()->json([
-            'success' => true,
-            'data' => new OrderResource($order),
-        ]);
+        return $this->successResponse(new OrderResource($order));
     }
 
     /**
@@ -126,17 +120,12 @@ class OrderController extends Controller
         try {
             $order = $this->orderService->updateOrder($order, $request->validated());
 
-            return response()->json([
-                'success' => true,
-                'data' => new OrderResource($order),
-                'message' => 'Order updated successfully',
-            ]);
+            return $this->successResponse(
+                new OrderResource($order),
+                'Order updated successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update order',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to update order: ' . $e->getMessage(), 500);
         }
     }
 
@@ -203,16 +192,12 @@ class OrderController extends Controller
         try {
             $order = $this->orderService->updateOrderStatus($order, 'PROCESSING');
 
-            return response()->json([
-                'success' => true,
-                'data' => new OrderResource($order),
-                'message' => 'Order accepted successfully',
-            ]);
+            return $this->successResponse(
+                new OrderResource($order),
+                'Order accepted successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to accept order',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to accept order: ' . $e->getMessage(), 500);
         }
     }
 
@@ -223,16 +208,12 @@ class OrderController extends Controller
         try {
             $order = $this->orderService->updateOrderStatus($order, 'RETURNED');
 
-            return response()->json([
-                'success' => true,
-                'data' => new OrderResource($order),
-                'message' => 'Order declined successfully',
-            ]);
+            return $this->successResponse(
+                new OrderResource($order),
+                'Order declined successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to decline order',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to decline order: ' . $e->getMessage(), 500);
         }
     }
 
@@ -241,17 +222,12 @@ class OrderController extends Controller
         try {
             $order = $this->orderService->confirmPayment($order, $request->validated());
 
-            return response()->json([
-                'success' => true,
-                'data' => new OrderResource($order),
-                'message' => 'Payment confirmed successfully',
-            ]);
+            return $this->successResponse(
+                new OrderResource($order),
+                'Payment confirmed successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to confirm payment',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to confirm payment: ' . $e->getMessage(), 500);
         }
     }
 
@@ -260,17 +236,12 @@ class OrderController extends Controller
         try {
             $order = $this->orderService->scheduleInstallation($order, $request->validated()['installation_date']);
 
-            return response()->json([
-                'success' => true,
-                'data' => new OrderResource($order),
-                'message' => 'Installation scheduled successfully',
-            ]);
+            return $this->successResponse(
+                new OrderResource($order),
+                'Installation scheduled successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to schedule installation',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to schedule installation: ' . $e->getMessage(), 500);
         }
     }
 
@@ -279,17 +250,12 @@ class OrderController extends Controller
         try {
             $order = $this->orderService->updateOrderStatus($order, $request->validated()['status']);
 
-            return response()->json([
-                'success' => true,
-                'data' => new OrderResource($order),
-                'message' => 'Order status updated successfully',
-            ]);
+            return $this->successResponse(
+                new OrderResource($order),
+                'Order status updated successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update order status',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to update order status: ' . $e->getMessage(), 500);
         }
     }
 
@@ -304,15 +270,12 @@ class OrderController extends Controller
         try {
             $order->update(['tracking_number' => $validated['tracking_number']]);
 
-            return response()->json([
-                'data' => new OrderResource($order),
-                'message' => 'Tracking number updated successfully',
-            ]);
+            return $this->successResponse(
+                new OrderResource($order),
+                'Tracking number updated successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to update tracking number',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to update tracking number: ' . $e->getMessage(), 500);
         }
     }
 
@@ -334,15 +297,12 @@ class OrderController extends Controller
 
             $order->update(['notes' => json_encode($notes)]);
 
-            return response()->json([
-                'data' => new OrderResource($order),
-                'message' => 'Note added successfully',
-            ]);
+            return $this->successResponse(
+                new OrderResource($order),
+                'Note added successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to add note',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to add note: ' . $e->getMessage(), 500);
         }
     }
 
@@ -358,15 +318,12 @@ class OrderController extends Controller
         try {
             $order = $this->orderService->processRefund($order, $validated);
 
-            return response()->json([
-                'data' => new OrderResource($order),
-                'message' => 'Refund processed successfully',
-            ]);
+            return $this->successResponse(
+                new OrderResource($order),
+                'Refund processed successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to process refund',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to process refund: ' . $e->getMessage(), 500);
         }
     }
 
@@ -391,19 +348,12 @@ class OrderController extends Controller
             };
 
             if ($success) {
-                return response()->json([
-                    'message' => 'Notification sent successfully',
-                ]);
+                return $this->successResponse(null, 'Notification sent successfully');
             } else {
-                return response()->json([
-                    'message' => 'Failed to send notification',
-                ], 500);
+                return $this->errorResponse('Failed to send notification', 500);
             }
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to send notification',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to send notification: ' . $e->getMessage(), 500);
         }
     }
 

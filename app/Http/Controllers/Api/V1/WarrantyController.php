@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use App\Models\Warranty;
 use App\Models\WarrantyClaim;
 use App\Models\Order;
@@ -16,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\WarrantyClaimStatusUpdated;
 
-class warrantyController extends Controller
+class WarrantyController extends BaseController
 {
     public function __construct(
         private WarrantyService $warrantyService
@@ -24,36 +23,38 @@ class warrantyController extends Controller
     public function index(): JsonResponse
     {
         $warranties = Auth::user()->warranties()
-            ->with(['order'])
+            ->with(['order', 'claims'])
             ->latest()
             ->paginate(15);
 
-        return response()->json([
-            'data' => WarrantyResource::collection($warranties->items()),
-            'meta' => [
+        return $this->successResponse(
+            WarrantyResource::collection($warranties->items()),
+            null,
+            [
                 'current_page' => $warranties->currentPage(),
                 'last_page' => $warranties->lastPage(),
                 'per_page' => $warranties->perPage(),
                 'total' => $warranties->total(),
             ]
-        ]);
+        );
     }
 
     public function adminIndex(): JsonResponse
     {
-        $warranties = Warranty::with(['user', 'order'])
+        $warranties = Warranty::with(['user', 'order', 'claims'])
             ->latest()
             ->paginate(20);
 
-        return response()->json([
-            'data' => WarrantyResource::collection($warranties->items()),
-            'meta' => [
+        return $this->successResponse(
+            WarrantyResource::collection($warranties->items()),
+            null,
+            [
                 'current_page' => $warranties->currentPage(),
                 'last_page' => $warranties->lastPage(),
                 'per_page' => $warranties->perPage(),
                 'total' => $warranties->total(),
             ]
-        ]);
+        );
     }
 
     public function show(Warranty $warranty): JsonResponse
@@ -62,7 +63,7 @@ class warrantyController extends Controller
 
         $warranty->load(['order', 'user', 'claims']);
 
-        return response()->json(new WarrantyResource($warranty));
+        return $this->successResponse(new WarrantyResource($warranty));
     }
 
     public function createClaim(Request $request, Warranty $warranty): JsonResponse
@@ -108,7 +109,7 @@ class warrantyController extends Controller
             'documents' => $documentPaths,
         ]);
 
-        return response()->json(new WarrantyClaimResource($claim), 201);
+        return $this->successResponse(new WarrantyClaimResource($claim), 'Warranty claim created successfully');
     }
 
     public function claims(): JsonResponse
@@ -118,9 +119,10 @@ class warrantyController extends Controller
             ->latest()
             ->paginate(15);
 
-        return response()->json([
-            'data' => WarrantyClaimResource::collection($claims->items()),
-            'meta' => [
+        return $this->successResponse(
+            WarrantyClaimResource::collection($claims->items()),
+            null,
+            [
                 'current_page' => $claims->currentPage(),
                 'last_page' => $claims->lastPage(),
                 'per_page' => $claims->perPage(),
@@ -152,7 +154,7 @@ class warrantyController extends Controller
             }
         }
 
-        return response()->json(new WarrantyClaimResource($warrantyClaim->load(['warranty', 'user'])));
+        return $this->successResponse(new WarrantyClaimResource($warrantyClaim->load(['warranty', 'user'])));
     }
 
     private function generateClaimNumber(): string

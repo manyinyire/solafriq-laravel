@@ -5,15 +5,23 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| EXTERNAL API ROUTES (Sanctum Token Authentication)
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
+| These routes use Sanctum token authentication and are intended for:
+| - Mobile applications
+| - Third-party integrations  
+| - External API consumers
+| - Future API clients
 |
-| Note: These are TRUE REST API routes for external consumers.
-| Internal Inertia.js routes remain in web.php for proper session handling.
+| IMPORTANT: The web frontend (Vue.js/Inertia) uses web.php routes with
+| session-based authentication, NOT these API routes.
+|
+| DO NOT confuse these external API routes with the data-fetching routes
+| in web.php which are used by the Inertia.js frontend.
+|
+| Authentication: Bearer token (Sanctum)
+| Content-Type: application/json
 |
 */
 

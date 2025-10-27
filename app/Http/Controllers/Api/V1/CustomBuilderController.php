@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use App\Services\SolarSystemBuilderService;
 use App\Models\Product;
 use App\Models\Cart;
@@ -14,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 
-class CustomBuilderController extends Controller
+class CustomBuilderController extends BaseController
 {
     protected $builderService;
 
@@ -50,15 +49,12 @@ class CustomBuilderController extends Controller
             $cacheKey = 'calculation_' . hash('sha256', json_encode($validated) . (Auth::id() ?? 'guest'));
             Cache::put($cacheKey, $calculation, now()->addHours(2));
 
-            return response()->json([
+            return $this->successResponse([
                 'calculation' => $calculation,
                 'cache_key' => $cacheKey,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'System calculation failed',
-                'error' => $e->getMessage()
-            ], 422);
+            return $this->errorResponse('System calculation failed: ' . $e->getMessage(), 422);
         }
     }
 
@@ -84,12 +80,9 @@ class CustomBuilderController extends Controller
         try {
             $validation = $this->builderService->validateSystemConfiguration($validated);
 
-            return response()->json($validation);
+            return $this->successResponse($validation);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'System validation failed',
-                'error' => $e->getMessage()
-            ], 422);
+            return $this->errorResponse('System validation failed: ' . $e->getMessage(), 422);
         }
     }
 
@@ -110,9 +103,7 @@ class CustomBuilderController extends Controller
         // Retrieve the calculation from cache
         $calculation = Cache::get($validated['cache_key']);
         if (!$calculation) {
-            return response()->json([
-                'message' => 'Calculation data not found or expired'
-            ], 404);
+            return $this->errorResponse('Calculation data not found or expired', 404);
         }
 
         // Save the custom system configuration
@@ -137,7 +128,7 @@ class CustomBuilderController extends Controller
             ->latest()
             ->paginate(10);
 
-        return response()->json($savedSystems);
+        return $this->successResponse($savedSystems);
     }
 
     public function getCalculation(string $cacheKey): JsonResponse
@@ -145,12 +136,10 @@ class CustomBuilderController extends Controller
         $calculation = Cache::get($cacheKey);
 
         if (!$calculation) {
-            return response()->json([
-                'message' => 'Calculation not found or expired'
-            ], 404);
+            return $this->errorResponse('Calculation not found or expired', 404);
         }
 
-        return response()->json($calculation);
+        return $this->successResponse($calculation);
     }
 
     public function generateQuote(Request $request): JsonResponse
@@ -169,20 +158,15 @@ class CustomBuilderController extends Controller
 
         $calculation = Cache::get($validated['cache_key']);
         if (!$calculation) {
-            return response()->json([
-                'message' => 'Calculation data not found or expired'
-            ], 404);
+            return $this->errorResponse('Calculation data not found or expired', 404);
         }
 
         try {
             $quote = $this->builderService->generateQuote($calculation, $validated);
 
-            return response()->json($quote);
+            return $this->successResponse($quote);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Quote generation failed',
-                'error' => $e->getMessage()
-            ], 422);
+            return $this->errorResponse('Quote generation failed: ' . $e->getMessage(), 422);
         }
     }
 
@@ -217,7 +201,7 @@ class CustomBuilderController extends Controller
             'ACCESSORIES' => $products->where('category', 'ACCESSORIES')->values(),
         ];
 
-        return response()->json($groupedProducts);
+        return $this->successResponse($groupedProducts);
     }
 
     /**
@@ -243,13 +227,10 @@ class CustomBuilderController extends Controller
                     $quantity = $component['quantity'];
 
                     if ($quantity > $product->stock_quantity) {
-                        return response()->json([
-                            'message' => "Insufficient stock for {$product->name}. Only {$product->stock_quantity} units available.",
-                            'error' => 'INSUFFICIENT_STOCK',
-                            'product' => $product->name,
-                            'requested' => $quantity,
-                            'available' => $product->stock_quantity,
-                        ], 400);
+                        return $this->errorResponse(
+                            "Insufficient stock for {$product->name}. Only {$product->stock_quantity} units available.",
+                            400
+                        );
                     }
                 }
 
@@ -268,10 +249,7 @@ class CustomBuilderController extends Controller
                     if ($existingItem) {
                         $newQuantity = $existingItem->quantity + $quantity;
                         if ($newQuantity > $product->stock_quantity) {
-                            return response()->json([
-                                'message' => "Cannot add more {$product->name}. Stock limit reached.",
-                                'error' => 'INSUFFICIENT_STOCK',
-                            ], 400);
+                            return $this->errorResponse("Cannot add more {$product->name}. Stock limit reached.", 400);
                         }
                         $existingItem->update(['quantity' => $newQuantity]);
                         $addedItems[] = $existingItem;
@@ -287,17 +265,13 @@ class CustomBuilderController extends Controller
                     }
                 }
 
-                return response()->json([
-                    'message' => 'Custom system added to cart successfully',
+                return $this->successResponse([
                     'items_added' => count($addedItems),
                     'cart_count' => $cart->items()->count(),
-                ]);
+                ], 'Custom system added to cart successfully');
             });
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to add to cart',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->errorResponse('Failed to add to cart: ' . $e->getMessage(), 500);
         }
     }
 

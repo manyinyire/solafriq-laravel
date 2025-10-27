@@ -18,6 +18,7 @@ import {
   Search,
   Filter
 } from 'lucide-vue-next'
+import { formatCurrency, formatDate, getStatusColor } from '@/utils/formatters'
 
 const loading = ref(true)
 const orders = ref([])
@@ -78,37 +79,22 @@ const loadOrders = async (page = 1) => {
   }
 }
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(value)
+// All formatting functions imported from @/utils/formatters
+
+const getOrderStatusColor = (status) => {
+  return getStatusColor(status, 'order')
 }
 
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-const getStatusColor = (status) => {
-  switch (status?.toLowerCase()) {
-    case 'delivered':
-      return 'bg-green-100 text-green-800'
-    case 'shipped':
-      return 'bg-blue-100 text-blue-800'
-    case 'processing':
-    case 'confirmed':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'pending':
-      return 'bg-gray-100 text-gray-800'
-    case 'cancelled':
-      return 'bg-red-100 text-red-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
+const getOrderStatusName = (status) => {
+  const statusMap = {
+    'DELIVERED': 'Delivered',
+    'PROCESSING': 'Processing',
+    'CONFIRMED': 'Confirmed',
+    'PENDING': 'Pending',
+    'CANCELLED': 'Cancelled',
+    'SHIPPED': 'Shipped'
   }
+  return statusMap[status] || status
 }
 
 const getStatusIcon = (status) => {

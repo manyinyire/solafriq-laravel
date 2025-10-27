@@ -282,6 +282,7 @@ import {
   Wrench,
   FileText
 } from 'lucide-vue-next'
+import { formatCurrency, formatDate, getStatusColor } from '@/utils/formatters'
 
 const page = usePage()
 const loading = ref(true)
@@ -300,7 +301,7 @@ const loadDashboardData = async () => {
   try {
     // Load all dashboard data in parallel
     const [statsResponse, ordersResponse, installmentResponse] = await Promise.all([
-      fetch('/api/v1/dashboard/stats', {
+      fetch('/dashboard/stats', {
         headers: {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
@@ -308,7 +309,7 @@ const loadDashboardData = async () => {
         },
         credentials: 'same-origin'
       }),
-      fetch('/api/v1/dashboard/recent-orders', {
+      fetch('/dashboard/recent-orders', {
         headers: {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
@@ -316,7 +317,7 @@ const loadDashboardData = async () => {
         },
         credentials: 'same-origin'
       }),
-      fetch('/api/v1/dashboard/installment-summary', {
+      fetch('/dashboard/installment-summary', {
         headers: {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
@@ -332,49 +333,26 @@ const loadDashboardData = async () => {
       installmentResponse.json()
     ])
 
+    // Handle standardized response format (with data wrapper)
     dashboardData.value = {
-      stats: stats,
-      recent_orders: orders,
-      installment_summary: installments
+      stats: stats.success ? stats.data : stats,
+      recent_orders: orders.success ? orders.data : orders,
+      installment_summary: installments.success ? installments.data : installments
     }
   } catch (error) {
     console.error('Failed to load dashboard data:', error)
+    // Enhanced error handling
+    if (error.response?.status === 401) {
+      window.location.href = '/login'
+    } else if (error.response?.status === 403) {
+      alert('You do not have permission to view this data')
+    } else {
+      alert('Failed to load dashboard. Please refresh the page.')
+    }
   } finally {
     loading.value = false
   }
 }
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(value)
-}
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-const getStatusColor = (status) => {
-  switch (status.toLowerCase()) {
-    case 'delivered':
-    case 'completed':
-      return 'bg-green-100 text-green-800'
-    case 'pending':
-    case 'processing':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'shipped':
-      return 'bg-blue-100 text-blue-800'
-    case 'cancelled':
-      return 'bg-red-100 text-red-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
-}
+// All formatting functions are now imported from @/utils/formatters
 </script>

@@ -46,30 +46,10 @@ const loadOrders = async () => {
   }
 }
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(value)
-}
+// All formatting functions imported from @/utils/formatters
 
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-const getStatusColor = (status) => {
-  const colors = {
-    'PENDING': 'bg-yellow-100 text-yellow-800',
-    'ACCEPTED': 'bg-blue-100 text-blue-800',
-    'SCHEDULED': 'bg-indigo-100 text-indigo-800',
-    'INSTALLED': 'bg-green-100 text-green-800',
-    'RETURNED': 'bg-red-100 text-red-800'
-  }
-  return colors[status] || 'bg-gray-100 text-gray-800'
+const getOrderStatusColor = (status) => {
+  return getStatusColor(status, 'order')
 }
 
 const getPaymentStatusColor = (status) => {

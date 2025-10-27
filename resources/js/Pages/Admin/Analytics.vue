@@ -25,9 +25,9 @@ onMounted(async () => {
 const loadAnalytics = async () => {
   loading.value = true
   try {
-    // Load multiple analytics endpoints
+    // Load multiple analytics endpoints using existing routes
     const [salesResponse, customerResponse, performanceResponse] = await Promise.all([
-      fetch('/api/v1/admin/analytics/sales-report', {
+      fetch('/admin/dashboard/sales-analytics', {
         headers: {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
@@ -35,7 +35,7 @@ const loadAnalytics = async () => {
         },
         credentials: 'same-origin'
       }),
-      fetch('/api/v1/admin/analytics/customer-insights', {
+      fetch('/admin/dashboard/system-metrics', {
         headers: {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
@@ -43,7 +43,7 @@ const loadAnalytics = async () => {
         },
         credentials: 'same-origin'
       }),
-      fetch('/api/v1/admin/analytics/system-performance', {
+      fetch('/admin/dashboard/overview', {
         headers: {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
@@ -60,12 +60,13 @@ const loadAnalytics = async () => {
     ])
 
     analyticsData.value = {
-      sales: salesData.success ? salesData.data : {},
-      customers: customerData.success ? customerData.data : {},
-      performance: performanceData.success ? performanceData.data : {}
+      sales: salesData,
+      customers: customerData,
+      performance: performanceData
     }
   } catch (error) {
     console.error('Failed to load analytics:', error)
+    alert('Failed to load analytics data. Please try again.')
   } finally {
     loading.value = false
   }

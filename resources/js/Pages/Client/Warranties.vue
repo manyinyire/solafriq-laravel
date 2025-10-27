@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import ClientLayout from '@/Layouts/ClientLayout.vue'
 import { Shield, Download, Calendar, Clock, CheckCircle, AlertCircle } from 'lucide-vue-next'
+import { formatDate, getStatusColor } from '@/utils/formatters'
 
 const loading = ref(true)
 const warranties = ref([])
@@ -34,30 +35,15 @@ const loadWarranties = async (page = 1) => {
   }
 }
 
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
+// All formatting functions imported from @/utils/formatters
 
-const getStatusColor = (status) => {
-  switch (status?.toLowerCase()) {
-    case 'active':
-      return 'bg-green-100 text-green-800'
-    case 'expired':
-      return 'bg-red-100 text-red-800'
-    case 'pending':
-      return 'bg-yellow-100 text-yellow-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
+const getWarrantyStatusColor = (status) => {
+  return getStatusColor(status, 'warranty')
 }
 
 const downloadCertificate = async (warrantyId) => {
   try {
-    window.open(`/api/v1/warranties/${warrantyId}/certificate`, '_blank')
+    window.open(`/warranties/${warrantyId}/certificate`, '_blank')
   } catch (error) {
     console.error('Failed to download certificate:', error)
   }

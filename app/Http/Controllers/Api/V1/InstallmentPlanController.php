@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use App\Models\InstallmentPlan;
 use App\Models\InstallmentPayment;
 use App\Services\OrderProcessingService;
@@ -12,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 
-class InstallmentPlanController extends Controller
+class InstallmentPlanController extends BaseController
 {
     protected $orderService;
 
@@ -28,7 +27,7 @@ class InstallmentPlanController extends Controller
             ->latest()
             ->paginate(15);
 
-        return response()->json($plans);
+        return $this->successResponse($plans);
     }
 
     public function adminIndex(): JsonResponse
@@ -37,7 +36,7 @@ class InstallmentPlanController extends Controller
             ->latest()
             ->paginate(20);
 
-        return response()->json($plans);
+        return $this->successResponse($plans);
     }
 
     public function show(InstallmentPlan $installmentPlan): JsonResponse
@@ -46,7 +45,7 @@ class InstallmentPlanController extends Controller
 
         $installmentPlan->load(['order', 'payments', 'user']);
 
-        return response()->json($installmentPlan);
+        return $this->successResponse($installmentPlan);
     }
 
     public function store(Request $request): JsonResponse
@@ -64,7 +63,7 @@ class InstallmentPlanController extends Controller
         // Create the payment schedule
         $this->createPaymentSchedule($plan);
 
-        return response()->json($plan->load(['order', 'payments']), 201);
+        return $this->successResponse($plan->load(['order', 'payments']), 'Installment plan created successfully');
     }
 
     public function update(Request $request, InstallmentPlan $installmentPlan): JsonResponse
