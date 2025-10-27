@@ -13,6 +13,7 @@ import {
   XCircle,
   Eye
 } from 'lucide-vue-next'
+import { formatCurrency, formatDate, getStatusColor } from '@/utils/formatters'
 
 const loading = ref(true)
 const orders = ref([])
@@ -45,8 +46,6 @@ const loadOrders = async () => {
     loading.value = false
   }
 }
-
-// All formatting functions imported from @/utils/formatters
 
 const getOrderStatusColor = (status) => {
   return getStatusColor(status, 'order')
