@@ -21,6 +21,11 @@ const form = ref({
   customer_address: props.customer?.address || '',
   notes: '',
   payment_method: 'card',
+  is_gift: false,
+  recipient_name: '',
+  recipient_email: '',
+  recipient_phone: '',
+  recipient_address: '',
 });
 
 const processing = ref(false);
