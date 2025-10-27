@@ -74,18 +74,14 @@ class QuoteController extends Controller
         try {
             DB::beginTransaction();
 
-            $quote->update([
-                'status' => 'accepted',
-                'accepted_at' => now(),
-            ]);
-
-            // Convert quote to order
+            // Convert quote to order first
             $order = $this->convertQuoteToOrder($quote);
 
-            // Auto-approve the order and create invoice
-            $order->update([
-                'status' => 'CONFIRMED',
-                'payment_status' => 'PENDING',
+            // Update quote status to converted and link to order
+            $quote->update([
+                'status' => 'converted',
+                'accepted_at' => now(),
+                'converted_order_id' => $order->id,
             ]);
 
             // Create invoice for the order
@@ -94,7 +90,7 @@ class QuoteController extends Controller
             DB::commit();
 
             return redirect()->route('admin.orders.show', $order->id)
-                ->with('success', 'Quote accepted! Order and invoice created.');
+                ->with('success', 'Quote converted to order! Invoice created.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -127,13 +123,10 @@ class QuoteController extends Controller
                 'name' => $quoteItem->item_name,
                 'description' => $quoteItem->item_description ?? '',
                 'quantity' => $quoteItem->quantity,
-                'price' => $quoteItem->total_price,
+                'price' => $quoteItem->unit_price, // Use unit price, not total
                 'type' => $quoteItem->item_type,
             ]);
         }
-
-        // Link order to quote
-        $quote->update(['converted_order_id' => $order->id]);
 
         return $order;
     }
