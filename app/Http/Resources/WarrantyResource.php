@@ -28,6 +28,18 @@ class WarrantyResource extends JsonResource
             'claims' => WarrantyClaimResource::collection($this->whenLoaded('claims')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            // Customer information
+            'user' => [
+                'id' => $this->whenLoaded('user', fn() => $this->user?->id),
+                'name' => $this->whenLoaded('user', fn() => $this->user?->name),
+                'email' => $this->whenLoaded('user', fn() => $this->user?->email),
+            ],
+            // Order information
+            'order' => [
+                'id' => $this->whenLoaded('order', fn() => $this->order?->id),
+                'customer_name' => $this->whenLoaded('order', fn() => $this->order?->customer_name),
+                'customer_email' => $this->whenLoaded('order', fn() => $this->order?->customer_email),
+            ],
         ];
     }
 }

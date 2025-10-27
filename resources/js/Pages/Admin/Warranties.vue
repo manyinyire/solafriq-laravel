@@ -57,7 +57,8 @@ const loadWarranties = async () => {
     })
 
     const data = await response.json()
-    warranties.value = data.data || []
+    // Handle both new standardized response and old format
+    warranties.value = data.data || data
   } catch (error) {
     console.error('Failed to load warranties:', error)
   } finally {
