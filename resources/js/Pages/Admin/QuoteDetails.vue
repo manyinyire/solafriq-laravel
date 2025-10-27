@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { FileText, Send, Download, Edit, Save, X, Plus, Trash2, User, Mail, Phone, MapPin, Calendar, DollarSign, Package } from 'lucide-vue-next';
+import { FileText, Send, Download, Edit, Save, X, Plus, Trash2, User, Mail, Phone, MapPin, Calendar, DollarSign, Package, CheckCircle } from 'lucide-vue-next';
 
 const props = defineProps({
   quote: Object,
@@ -44,6 +44,24 @@ const canEdit = computed(() => {
 const canSend = computed(() => {
   return props.quote.status === 'pending';
 });
+
+const canAccept = computed(() => {
+  return props.quote.status === 'sent' || props.quote.status === 'pending';
+});
+
+const accepting = ref(false);
+
+const acceptQuoteOnBehalf = () => {
+  if (confirm('Accept this quote and create an order for the customer?')) {
+    accepting.value = true;
+    router.post(`/admin/quotes/${props.quote.id}/accept`, {}, {
+      preserveScroll: true,
+      onFinish: () => {
+        accepting.value = false;
+      },
+    });
+  }
+};
 
 const updateQuote = () => {
   router.put(`/admin/quotes/${props.quote.id}`, form.value, {
@@ -120,6 +138,15 @@ const getStatusColor = (status) => {
               <Download class="w-4 h-4 mr-2" />
               Download PDF
             </a>
+            <button
+              v-if="canAccept"
+              @click="acceptQuoteOnBehalf"
+              :disabled="accepting"
+              class="flex items-center bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-semibold"
+            >
+              <CheckCircle class="w-4 h-4 mr-2" />
+              {{ accepting ? 'Processing...' : 'Accept on Behalf' }}
+            </button>
             <button
               v-if="canSend"
               @click="sendQuote"
