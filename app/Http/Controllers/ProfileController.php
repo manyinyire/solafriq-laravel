@@ -28,6 +28,7 @@ class ProfileController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'phone_number' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:1000',
             'avatar' => 'nullable|image|mimes:jpeg,jpg,png,gif,svg|max:2048',
             'password' => ['nullable', 'confirmed', Password::defaults()],
         ]);
@@ -53,6 +54,7 @@ class ProfileController extends Controller
                 'name' => $validated['name'],
                 'phone_number' => $validated['phone_number'],
                 'phone' => $validated['phone_number'], // Sync both phone columns
+                'address' => $validated['address'],
                 'avatar' => $validated['avatar'] ?? $user->avatar,
                 'new_email' => $validated['email'],
                 'email_verification_token' => $token,
@@ -68,6 +70,7 @@ class ProfileController extends Controller
             'name' => $validated['name'],
             'phone_number' => $validated['phone_number'],
             'phone' => $validated['phone_number'], // Sync both phone columns
+            'address' => $validated['address'],
             'avatar' => $validated['avatar'] ?? $user->avatar,
             'password' => $validated['password'] ? Hash::make($validated['password']) : $user->password,
         ]);

@@ -21,6 +21,10 @@
               <input type="text" id="phone_number" v-model="form.phone_number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
             </div>
             <div>
+              <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+              <textarea id="address" v-model="form.address" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm" placeholder="Enter your complete address"></textarea>
+            </div>
+            <div>
               <label for="password" class="block text-sm font-medium text-gray-700">New Password</label>
               <input type="password" id="password" v-model="form.password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
             </div>
@@ -107,6 +111,7 @@ const form = useForm({
   name: page.props.auth.user.name,
   email: page.props.auth.user.email,
   phone_number: page.props.auth.user.phone_number,
+  address: page.props.auth.user.address || '',
   password: '',
   password_confirmation: '',
 });
