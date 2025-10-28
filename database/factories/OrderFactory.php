@@ -48,16 +48,6 @@ class OrderFactory extends Factory
     }
 
     /**
-     * Indicate that the order is confirmed.
-     */
-    public function confirmed(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'status' => 'CONFIRMED',
-        ]);
-    }
-
-    /**
      * Indicate that the order is processing.
      */
     public function processing(): static

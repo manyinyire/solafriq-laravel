@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\Invoice;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceGeneratorService
 {
@@ -41,20 +42,37 @@ class InvoiceGeneratorService
     }
 
     /**
-     * Generate PDF invoice (placeholder - would use libraries like DomPDF or TCPDF)
+     * Generate PDF invoice using DomPDF
      */
     public function generateInvoicePDF(Invoice $invoice): string
     {
         $invoice->load(['order.items', 'order.user']);
         
-        // This would typically use a PDF generation library
-        $pdfContent = $this->buildInvoiceHTML($invoice);
+        // Generate HTML content
+        $htmlContent = $this->buildInvoiceHTML($invoice);
+        
+        // Generate PDF using DomPDF
+        $pdf = Pdf::loadHTML($htmlContent);
+        $pdf->setPaper('A4', 'portrait');
         
         // Store PDF and return path
         $filename = "invoice_{$invoice->invoice_number}.pdf";
-        // In real implementation, you'd generate actual PDF here
+        $pdfPath = storage_path("app/public/invoices/{$filename}");
         
-        return $filename;
+        // Ensure directory exists
+        if (!file_exists(dirname($pdfPath))) {
+            mkdir(dirname($pdfPath), 0755, true);
+        }
+        
+        // Save PDF to storage
+        $pdf->save($pdfPath);
+        
+        Log::info('Invoice PDF generated', [
+            'invoice_id' => $invoice->id,
+            'pdf_path' => $pdfPath
+        ]);
+        
+        return $pdfPath;
     }
 
     /**
