@@ -1,31 +1,95 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Menu, ShoppingCart, User, LogOut, Settings, Sun, Shield, Phone, Mail, ChevronDown, FileText } from 'lucide-vue-next';
+import { Menu, ShoppingCart, User, LogOut, Settings, Sun, Shield, Phone, Mail, ChevronDown, FileText, X } from 'lucide-vue-next';
 
 const page = usePage();
 
 // Get company settings from shared data
 const companySettings = computed(() => page.props.companySettings || {});
 
-const logout = () => {
-  // Create a form and submit it as POST to logout
-  const form = document.createElement('form')
-  form.method = 'POST'
-  form.action = '/logout'
-  
-  // Add CSRF token
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-  if (csrfToken) {
-    const csrfInput = document.createElement('input')
-    csrfInput.type = 'hidden'
-    csrfInput.name = '_token'
-    csrfInput.value = csrfToken
-    form.appendChild(csrfInput)
+// Mobile menu state
+const mobileMenuOpen = ref(false);
+
+// Toggle mobile menu
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+};
+
+// Close mobile menu
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false;
+};
+
+const logout = async () => {
+  try {
+    // First, try to get a fresh CSRF token
+    const response = await fetch('/sanctum/csrf-cookie', {
+      method: 'GET',
+      credentials: 'same-origin'
+    })
+    
+    if (response.ok) {
+      // Get the updated CSRF token
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      
+      if (!csrfToken) {
+        console.error('CSRF token not found')
+        alert('Unable to logout. Please refresh the page and try again.')
+        return
+      }
+      
+      // Create a form and submit it as POST to logout
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = '/logout'
+      
+      // Add CSRF token
+      const csrfInput = document.createElement('input')
+      csrfInput.type = 'hidden'
+      csrfInput.name = '_token'
+      csrfInput.value = csrfToken
+      form.appendChild(csrfInput)
+      
+      document.body.appendChild(form)
+      form.submit()
+    } else {
+      // Fallback to direct form submission
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = '/logout'
+      
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      if (csrfToken) {
+        const csrfInput = document.createElement('input')
+        csrfInput.type = 'hidden'
+        csrfInput.name = '_token'
+        csrfInput.value = csrfToken
+        form.appendChild(csrfInput)
+      }
+      
+      document.body.appendChild(form)
+      form.submit()
+    }
+  } catch (error) {
+    console.error('Logout error:', error)
+    // Fallback to direct form submission
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = '/logout'
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+    if (csrfToken) {
+      const csrfInput = document.createElement('input')
+      csrfInput.type = 'hidden'
+      csrfInput.name = '_token'
+      csrfInput.value = csrfToken
+      form.appendChild(csrfInput)
+    }
+    
+    document.body.appendChild(form)
+    form.submit()
   }
-  
-  document.body.appendChild(form)
-  form.submit()
 }
 
 const isScrolled = ref(false);
@@ -207,13 +271,89 @@ const navItems = computed(() => {
                 </Link>
             </div>
 
-            <!-- Mobile Menu -->
-            <button class="lg:hidden hover:bg-orange-50 hover:text-orange-600 p-2 rounded-full">
+            <!-- Mobile Menu Button -->
+            <button @click="toggleMobileMenu" class="lg:hidden hover:bg-orange-50 hover:text-orange-600 p-2 rounded-full">
               <Menu class="h-5 w-5" />
             </button>
           </div>
         </div>
       </div>
     </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div v-show="mobileMenuOpen" class="lg:hidden fixed inset-0 z-50" role="dialog">
+      <!-- Background overlay -->
+      <div class="fixed inset-0 bg-gray-900/80" @click="closeMobileMenu"></div>
+      
+      <!-- Mobile menu panel -->
+      <div class="fixed inset-y-0 right-0 z-50 w-80 bg-white px-6 pb-4 overflow-y-auto">
+        <div class="flex h-16 items-center justify-between">
+          <img class="h-8 w-auto" :src="companySettings.company_logo || '/images/solafriq-logo.svg'" :alt="companySettings.company_name || 'SolaFriq'" />
+          <button @click="closeMobileMenu" class="rounded-md text-gray-700 hover:text-gray-900">
+            <X class="h-6 w-6" />
+          </button>
+        </div>
+        
+        <!-- Navigation Links -->
+        <nav class="mt-8">
+          <ul class="space-y-4">
+            <li>
+              <Link href="/" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link href="/about" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                About
+              </Link>
+            </li>
+            <li>
+              <Link href="/products" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                Products
+              </Link>
+            </li>
+            <li>
+              <Link href="/custom-builder" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                Custom Builder
+              </Link>
+            </li>
+            <li>
+              <Link href="/quotes" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                Get Quote
+              </Link>
+            </li>
+            <li>
+              <Link href="/contact" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                Contact
+              </Link>
+            </li>
+          </ul>
+        </nav>
+        
+        <!-- Action Buttons -->
+        <div class="mt-8 space-y-4">
+          <Link href="/login" @click="closeMobileMenu" class="block w-full text-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 border border-gray-300 rounded-md hover:border-orange-300">
+            Sign In
+          </Link>
+          <Link href="/register" @click="closeMobileMenu" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 rounded-md">
+            Get Started
+          </Link>
+        </div>
+        
+        <!-- Contact Info -->
+        <div class="mt-8 pt-8 border-t border-gray-200">
+          <div class="space-y-2">
+            <div class="flex items-center text-sm text-gray-600">
+              <Phone class="h-4 w-4 mr-2" />
+              {{ companySettings.company_phone || '+1-XXX-XXX-XXXX' }}
+            </div>
+            <div class="flex items-center text-sm text-gray-600">
+              <Mail class="h-4 w-4 mr-2" />
+              {{ companySettings.company_email || 'info@solafriq.com' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

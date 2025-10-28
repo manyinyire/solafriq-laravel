@@ -30,11 +30,14 @@ const currentPage = ref(1)
 const statusOptions = [
   { value: '', label: 'All Orders' },
   { value: 'PENDING', label: 'Pending' },
-  { value: 'CONFIRMED', label: 'Confirmed' },
   { value: 'PROCESSING', label: 'Processing' },
+  { value: 'SCHEDULED', label: 'Scheduled' },
+  { value: 'INSTALLED', label: 'Installed' },
   { value: 'SHIPPED', label: 'Shipped' },
   { value: 'DELIVERED', label: 'Delivered' },
-  { value: 'CANCELLED', label: 'Cancelled' }
+  { value: 'CANCELLED', label: 'Cancelled' },
+  { value: 'RETURNED', label: 'Returned' },
+  { value: 'REFUNDED', label: 'Refunded' }
 ]
 
 onMounted(async () => {
@@ -87,12 +90,15 @@ const getOrderStatusColor = (status) => {
 
 const getOrderStatusName = (status) => {
   const statusMap = {
-    'DELIVERED': 'Delivered',
-    'PROCESSING': 'Processing',
-    'CONFIRMED': 'Confirmed',
     'PENDING': 'Pending',
+    'PROCESSING': 'Processing',
+    'SCHEDULED': 'Scheduled',
+    'INSTALLED': 'Installed',
+    'SHIPPED': 'Shipped',
+    'DELIVERED': 'Delivered',
     'CANCELLED': 'Cancelled',
-    'SHIPPED': 'Shipped'
+    'RETURNED': 'Returned',
+    'REFUNDED': 'Refunded'
   }
   return statusMap[status] || status
 }

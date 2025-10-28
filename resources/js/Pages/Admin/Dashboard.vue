@@ -479,9 +479,11 @@ const systemStatusChartData = computed(() => {
                   <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
                     :class="{
                       'bg-yellow-100 text-yellow-800': activity.status === 'PENDING',
-                      'bg-blue-100 text-blue-800': activity.status === 'CONFIRMED',
+                      'bg-blue-100 text-blue-800': activity.status === 'PROCESSING',
                       'bg-green-100 text-green-800': activity.status === 'DELIVERED',
                       'bg-purple-100 text-purple-800': activity.status === 'INSTALLED',
+                      'bg-orange-100 text-orange-800': activity.status === 'SCHEDULED',
+                      'bg-red-100 text-red-800': activity.status === 'CANCELLED',
                     }"
                   >{{ activity.status }}</span>
                   <span class="text-xs text-gray-500">{{ formatDate(activity.created_at) }}</span>

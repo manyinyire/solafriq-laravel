@@ -37,24 +37,75 @@ const navigation = [
   { name: 'Company Settings', href: '/admin/settings', icon: Settings },
 ]
 
-const logout = () => {
-  // Create a form and submit it as POST to logout
-  const form = document.createElement('form')
-  form.method = 'POST'
-  form.action = '/logout'
-  
-  // Add CSRF token
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-  if (csrfToken) {
-    const csrfInput = document.createElement('input')
-    csrfInput.type = 'hidden'
-    csrfInput.name = '_token'
-    csrfInput.value = csrfToken
-    form.appendChild(csrfInput)
+const logout = async () => {
+  try {
+    // First, try to get a fresh CSRF token
+    const response = await fetch('/sanctum/csrf-cookie', {
+      method: 'GET',
+      credentials: 'same-origin'
+    })
+    
+    if (response.ok) {
+      // Get the updated CSRF token
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      
+      if (!csrfToken) {
+        console.error('CSRF token not found')
+        alert('Unable to logout. Please refresh the page and try again.')
+        return
+      }
+      
+      // Create a form and submit it as POST to logout
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = '/logout'
+      
+      // Add CSRF token
+      const csrfInput = document.createElement('input')
+      csrfInput.type = 'hidden'
+      csrfInput.name = '_token'
+      csrfInput.value = csrfToken
+      form.appendChild(csrfInput)
+      
+      document.body.appendChild(form)
+      form.submit()
+    } else {
+      // Fallback to direct form submission
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = '/logout'
+      
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      if (csrfToken) {
+        const csrfInput = document.createElement('input')
+        csrfInput.type = 'hidden'
+        csrfInput.name = '_token'
+        csrfInput.value = csrfToken
+        form.appendChild(csrfInput)
+      }
+      
+      document.body.appendChild(form)
+      form.submit()
+    }
+  } catch (error) {
+    console.error('Logout error:', error)
+    // Fallback to direct form submission
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = '/logout'
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+    if (csrfToken) {
+      const csrfInput = document.createElement('input')
+      csrfInput.type = 'hidden'
+      csrfInput.name = '_token'
+      csrfInput.value = csrfToken
+      form.appendChild(csrfInput)
+    }
+    
+    document.body.appendChild(form)
+    form.submit()
   }
-  
-  document.body.appendChild(form)
-  form.submit()
 }
 </script>
 
