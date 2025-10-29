@@ -111,10 +111,13 @@ const solarSystems = computed(() => page.props.solarSystems || []);
 const productCategories = computed(() => page.props.productCategories || []);
 
 const navItems = computed(() => {
-  // Build Solutions menu with dynamic solar systems
+  // Build Solutions menu - always show fallback items for now
   const solutionsItems = [
-    ...solarSystems.value,
+    { title: "Solar Packages", href: "/packages", description: "Pre-configured solar solutions" },
     { title: "Custom Builder", href: "/custom-builder", description: "Build your perfect solar system" },
+    { title: "Installation", href: "/services/installation", description: "Professional installation services" },
+    { title: "Monitoring", href: "/monitoring", description: "Real-time system monitoring" },
+    { title: "Maintenance", href: "/services/maintenance", description: "Ongoing support and maintenance" },
   ];
 
   // Build Products menu with dynamic categories

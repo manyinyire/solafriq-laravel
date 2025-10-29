@@ -65,7 +65,7 @@ const footerLinks = ["Privacy Policy", "Terms of Service", "Cookie Policy"];
 
         <!-- Quick Links -->
         <div class="space-y-6">
-          <h3 class="text-xl font-bold">Solutions</h3>
+          <h3 class="text-xl font-bold text-white">Solutions</h3>
           <ul class="space-y-3">
             <li v-for="item in solutions" :key="item.name">
               <Link
@@ -81,7 +81,7 @@ const footerLinks = ["Privacy Policy", "Terms of Service", "Cookie Policy"];
 
         <!-- Services -->
         <div class="space-y-6">
-          <h3 class="text-xl font-bold">Services</h3>
+          <h3 class="text-xl font-bold text-white">Services</h3>
           <ul class="space-y-3">
             <li v-for="item in services" :key="item.name">
               <Link
@@ -97,7 +97,7 @@ const footerLinks = ["Privacy Policy", "Terms of Service", "Cookie Policy"];
 
         <!-- Contact & Newsletter -->
         <div class="space-y-6">
-          <h3 class="text-xl font-bold">Get in Touch</h3>
+          <h3 class="text-xl font-bold text-white">Get in Touch</h3>
           <div class="space-y-4">
             <div v-for="(item, index) in contactInfo" :key="index" class="flex items-center space-x-3">
               <div class="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">

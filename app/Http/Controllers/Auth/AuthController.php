@@ -349,9 +349,12 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($validated, $request->boolean('remember'))) {
-            return back()->withErrors([
-                'email' => 'The provided credentials do not match our records.',
-            ])->onlyInput('email');
+            return back()
+                ->withErrors([
+                    'email' => 'The provided credentials do not match our records.',
+                ])
+                ->with('error', 'Login failed. Please check your credentials and try again.')
+                ->onlyInput('email');
         }
 
         $request->session()->regenerate();
@@ -359,10 +362,10 @@ class AuthController extends Controller
         // Redirect admin users to admin dashboard
         $user = Auth::user();
         if ($user->isAdmin()) {
-            return redirect()->intended('/admin/dashboard');
+            return redirect()->intended('/admin/dashboard')->with('success', 'Welcome back, ' . $user->name . '!');
         }
 
-        return redirect()->intended('/dashboard');
+        return redirect()->intended('/dashboard')->with('success', 'Welcome back, ' . $user->name . '!');
     }
 
     /**

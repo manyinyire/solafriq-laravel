@@ -63,13 +63,25 @@
             <p class="mt-2 text-gray-600">Access your solar energy dashboard</p>
           </div>
 
-          <!-- Success/Status Messages -->
-          <div v-if="$page.props.flash.status" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center">
-            <Check class="w-5 h-5 mr-2 flex-shrink-0" />
-            <span>{{ $page.props.flash.status }}</span>
-          </div>
+          <!-- Notifications -->
+          <Notification
+            v-if="$page.props.flash && $page.props.flash.success"
+            :show="true"
+            type="success"
+            title="Success"
+            :message="$page.props.flash.success"
+            @close="$page.props.flash.success = null"
+          />
+          <Notification
+            v-if="$page.props.flash && $page.props.flash.error"
+            :show="true"
+            type="error"
+            title="Login Failed"
+            :message="$page.props.flash.error"
+            @close="$page.props.flash.error = null"
+          />
 
-          <!-- Error Messages -->
+          <!-- Generic error fallback if validation returns non-field errors -->
           <div v-if="Object.keys(errors).length > 0 && !errors.email && !errors.password" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center">
             <AlertCircle class="w-5 h-5 mr-2 flex-shrink-0" />
             <span>Login failed. Please check your credentials and try again.</span>
@@ -190,6 +202,7 @@
 import { ref, reactive, computed } from 'vue'
 import { router, usePage, Link } from '@inertiajs/vue3'
 import { Lock, Mail, Sun, Check, AlertCircle } from 'lucide-vue-next'
+import Notification from '@/Components/Notification.vue'
 
 const page = usePage()
 const processing = ref(false)
