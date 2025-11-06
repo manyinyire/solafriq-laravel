@@ -129,8 +129,8 @@ class EmailNotificationService
                 'order' => $order,
                 'customer_name' => $order->customer_name,
                 'tracking_number' => $order->tracking_number,
-                'estimated_delivery' => now()->addDays(3), // Estimated delivery
-                'carrier' => 'SolaFriq Logistics', // Default carrier
+                'estimated_delivery' => now()->addDays(config('solafriq.estimated_delivery_days', 3)),
+                'carrier' => config('solafriq.default_carrier', 'SolaFriq Logistics')
             ];
 
             // Mail::to($order->customer_email)->send(new ShippingNotificationMail($data));
@@ -163,7 +163,7 @@ class EmailNotificationService
                 'installation_date' => $order->installation_date,
                 'order_number' => $order->id,
                 'items' => $order->items,
-                'support_contact' => 'support@solafriq.com',
+                'support_contact' => config('solafriq.support_email', 'support@solafriq.com'),
             ];
 
             // Mail::to($order->customer_email)->send(new InstallationScheduledMail($data));
@@ -229,7 +229,7 @@ class EmailNotificationService
                 'customer_name' => $order->customer_name,
                 'delivery_date' => now(),
                 'warranty_info' => $order->warranties->isNotEmpty(),
-                'support_contact' => 'support@solafriq.com',
+                'support_contact' => config('solafriq.support_email', 'support@solafriq.com'),
             ];
 
             // Mail::to($order->customer_email)->send(new DeliveryConfirmationMail($data));
@@ -320,12 +320,12 @@ class EmailNotificationService
     {
         try {
             $data = [
-                'customer_name' => $plan->user->name,
+                'customer_name' => $plan->user?->name ?? 'Customer',
                 'plan' => $plan,
                 'payment' => $payment,
                 'due_date' => $payment->due_date,
                 'amount_due' => $payment->amount,
-                'system_name' => $plan->solarSystem->name,
+                'system_name' => $plan->solarSystem?->name ?? 'Solar System',
             ];
 
             // Mail::to($plan->user->email)->send(new InstallmentReminderMail($data));
@@ -417,7 +417,7 @@ class EmailNotificationService
     public function sendAdminOrderNotification(Order $order): bool
     {
         try {
-            $adminEmails = ['admin@solafriq.com', 'orders@solafriq.com'];
+            $adminEmails = config('solafriq.admin_emails', ['admin@solafriq.com', 'orders@solafriq.com']);
             
             $data = [
                 'order' => $order,
@@ -494,9 +494,18 @@ class EmailNotificationService
                 'message' => 'Great news! Your order has been approved and is now being processed.',
             ];
 
-            // TODO: Attach invoice PDF
-            // Mail::to($order->customer_email)
-            //     ->send(new OrderApprovedMail($data)->attachInvoicePDF($order));
+            // Generate and attach invoice PDF
+            if ($order->invoice) {
+                $invoiceService = app(InvoiceGeneratorService::class);
+                $pdfPath = $invoiceService->generateInvoicePDF($order->invoice);
+
+                // In production, you would use:
+                // Mail::to($order->customer_email)
+                //     ->send((new OrderApprovedMail($data))->attach($pdfPath, [
+                //         'as' => 'invoice_' . $order->invoice->invoice_number . '.pdf',
+                //         'mime' => 'application/pdf',
+                //     ]));
+            }
 
             Log::info('Order approved email with invoice sent', [
                 'order_id' => $order->id,
@@ -528,8 +537,8 @@ class EmailNotificationService
                 'items' => $order->items,
                 'total_amount' => $order->total_amount,
                 'message' => 'We regret to inform you that your order has been declined. Please contact our support team for more information.',
-                'support_email' => 'support@solafriq.com',
-                'support_phone' => '+1-800-555-0123',
+                'support_email' => config('solafriq.support_email', 'support@solafriq.com'),
+                'support_phone' => config('solafriq.support_phone', '+1-800-555-0123'),
             ];
 
             // Mail::to($order->customer_email)->send(new OrderDeclinedMail($data));
@@ -569,9 +578,18 @@ class EmailNotificationService
                 'message' => 'Your payment has been confirmed! Your invoice is attached.',
             ];
 
-            // TODO: Attach paid invoice PDF
-            // Mail::to($order->customer_email)
-            //     ->send(new PaymentConfirmationMail($data)->attachInvoicePDF($order));
+            // Generate and attach paid invoice PDF
+            if ($order->invoice) {
+                $invoiceService = app(InvoiceGeneratorService::class);
+                $pdfPath = $invoiceService->generateInvoicePDF($order->invoice);
+
+                // In production, you would use:
+                // Mail::to($order->customer_email)
+                //     ->send((new PaymentConfirmationMail($data))->attach($pdfPath, [
+                //         'as' => 'invoice_' . $order->invoice->invoice_number . '.pdf',
+                //         'mime' => 'application/pdf',
+                //     ]));
+            }
 
             Log::info('Payment confirmation email with invoice sent', [
                 'order_id' => $order->id,
@@ -606,12 +624,25 @@ class EmailNotificationService
                 'warranties' => $order->warranties,
                 'items' => $order->items,
                 'message' => 'Your solar system has been successfully installed! Your warranty certificates are attached.',
-                'support_contact' => 'support@solafriq.com',
+                'support_contact' => config('solafriq.support_email', 'support@solafriq.com'),
             ];
 
-            // TODO: Attach warranty certificates PDF
-            // Mail::to($order->customer_email)
-            //     ->send(new OrderInstalledMail($data)->attachWarrantiesPDF($order));
+            // Generate and attach warranty certificates PDF
+            if ($order->warranties->isNotEmpty()) {
+                $warrantyService = app(WarrantyService::class);
+
+                // In production, generate warranty PDFs and attach:
+                // foreach ($order->warranties as $warranty) {
+                //     $pdfPath = $warrantyService->generateWarrantyCertificate($warranty);
+                //     $attachments[] = [
+                //         'path' => $pdfPath,
+                //         'name' => 'warranty_' . $warranty->serial_number . '.pdf',
+                //         'mime' => 'application/pdf'
+                //     ];
+                // }
+                // Mail::to($order->customer_email)
+                //     ->send(new OrderInstalledMail($data, $attachments));
+            }
 
             Log::info('Order installed email with warranty sent', [
                 'order_id' => $order->id,

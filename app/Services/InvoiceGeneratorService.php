@@ -9,8 +9,6 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceGeneratorService
 {
-    private const TAX_RATE = 0.0825; // 8.25% Sales Tax in USA
-
     /**
      * Generate invoice for an order
      */
@@ -18,7 +16,7 @@ class InvoiceGeneratorService
     {
         // Calculate invoice totals
         $subtotal = $order->items->sum(fn($item) => $item->price * $item->quantity);
-        $tax = $subtotal * self::TAX_RATE;
+        $tax = $subtotal * config('solafriq.tax_rate', 0.0825);
         $total = $subtotal + $tax;
 
         // Create or update invoice
@@ -106,8 +104,8 @@ class InvoiceGeneratorService
             // It's already a full URL
             $logoData = $companyLogo;
         }
-        
-        return "
+
+        $pdfContent = "
         <!DOCTYPE html>
         <html>
         <head>
@@ -179,7 +177,7 @@ class InvoiceGeneratorService
             
             <div class='totals'>
                 <p>Subtotal: $" . number_format($invoice->subtotal, 2) . "</p>
-                <p>Sales Tax (8.25%): $" . number_format($invoice->tax, 2) . "</p>
+                <p>Sales Tax (" . (config('solafriq.tax_rate') * 100) . "%): $" . number_format($invoice->tax, 2) . "</p>
                 <p class='total-row'>Total: $" . number_format($invoice->total, 2) . "</p>
             </div>
             
@@ -249,7 +247,7 @@ class InvoiceGeneratorService
             'customer_email' => $order->customer_email,
             'amount_due' => $invoice->total,
             'days_overdue' => $daysOverdue,
-            'due_date' => $invoice->created_at->addDays(30), // 30 days payment terms
+            'due_date' => $invoice->created_at->addDays(config('solafriq.payment_terms_days', 30)),
             'payment_methods' => [
                 'Bank Transfer',
                 'Online Payment',

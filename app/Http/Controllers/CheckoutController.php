@@ -95,15 +95,15 @@ class CheckoutController extends Controller
                 $itemType = $cartItem->item_type ?? 'unknown';
 
                 if ($cartItem->item_type === 'solar_system' && $cartItem->solarSystem) {
-                    $itemName = $cartItem->solarSystem->name;
-                    $itemDescription = $cartItem->solarSystem->description ?? $cartItem->solarSystem->capacity . 'kW Solar System';
+                    $itemName = $cartItem->solarSystem->name ?? 'Solar System';
+                    $itemDescription = $cartItem->solarSystem->description ?? ($cartItem->solarSystem->capacity ? $cartItem->solarSystem->capacity . 'kW Solar System' : 'Solar System');
                     $itemImageUrl = $cartItem->solarSystem->image_url ?? null;
                 } elseif ($cartItem->item_type === 'product' && $cartItem->product) {
-                    $itemName = $cartItem->product->name;
+                    $itemName = $cartItem->product->name ?? 'Product';
                     $itemDescription = $cartItem->product->description ?? '';
                     $itemImageUrl = $cartItem->product->image_url ?? null;
                 } elseif ($cartItem->item_type === 'custom_component' && $cartItem->product) {
-                    $itemName = $cartItem->product->name;
+                    $itemName = $cartItem->product->name ?? 'Component';
                     if ($cartItem->custom_system_name) {
                         $itemName .= ' (Part of: ' . $cartItem->custom_system_name . ')';
                     }

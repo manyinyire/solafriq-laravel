@@ -99,7 +99,7 @@ class WarrantyService
      */
     private function generateSerialNumber(Order $order, $item): string
     {
-        $prefix = 'WR';
+        $prefix = config('solafriq.warranty_prefix', 'WR');
         $year = now()->year;
         $orderId = str_pad($order->id, 6, '0', STR_PAD_LEFT);
         $itemId = str_pad($item->id, 4, '0', STR_PAD_LEFT);

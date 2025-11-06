@@ -63,7 +63,7 @@ class OrderController extends BaseController
             $query->whereDate('created_at', '<=', $request->input('date_to'));
         }
 
-        $orders = $query->paginate($request->input('per_page', 15));
+        $orders = $query->paginate($request->input('per_page', config('solafriq.default_per_page', 15)));
 
         return $this->successResponse(
             OrderResource::collection($orders->items()),
@@ -448,7 +448,7 @@ class OrderController extends BaseController
             $query->where('installation_date', '<=', $request->input('to_date'));
         }
 
-        $orders = $query->paginate($request->input('per_page', 15));
+        $orders = $query->paginate($request->input('per_page', config('solafriq.default_per_page', 15)));
 
         return response()->json([
             'data' => OrderResource::collection($orders),

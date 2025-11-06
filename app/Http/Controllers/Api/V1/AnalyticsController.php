@@ -81,21 +81,48 @@ class AnalyticsController extends Controller
         $query = Order::whereBetween('created_at', [$startDate, $endDate])
                      ->where('status', '!=', 'CANCELLED');
 
-        $groupBy = match ($period) {
-            'daily' => "DATE(created_at)",
-            'weekly' => "YEARWEEK(created_at)",
-            'monthly' => "YEAR(created_at), MONTH(created_at)",
-            'yearly' => "YEAR(created_at)",
+        // Safe construction of DB::raw expressions without string interpolation
+        [$selectPeriod, $groupByPeriod, $orderByPeriod] = match ($period) {
+            'daily' => [
+                DB::raw('DATE(created_at) as period'),
+                DB::raw('DATE(created_at)'),
+                DB::raw('DATE(created_at)')
+            ],
+            'weekly' => [
+                DB::raw('YEARWEEK(created_at) as period'),
+                DB::raw('YEARWEEK(created_at)'),
+                DB::raw('YEARWEEK(created_at)')
+            ],
+            'monthly' => [
+                DB::raw("CONCAT(YEAR(created_at), '-', LPAD(MONTH(created_at), 2, '0')) as period"),
+                DB::raw('YEAR(created_at)'),
+                DB::raw('YEAR(created_at)')
+            ],
+            'yearly' => [
+                DB::raw('YEAR(created_at) as period'),
+                DB::raw('YEAR(created_at)'),
+                DB::raw('YEAR(created_at)')
+            ],
         };
 
         $results = $query->select(
-            DB::raw("{$groupBy} as period"),
+            $selectPeriod,
             DB::raw('COUNT(*) as order_count'),
             DB::raw('SUM(total_amount) as total_revenue'),
             DB::raw('AVG(total_amount) as average_order_value')
-        )->groupBy(DB::raw($groupBy))
-         ->orderBy(DB::raw($groupBy))
-         ->get();
+        );
+
+        // Add month grouping for monthly period
+        if ($period === 'monthly') {
+            $results = $results->groupBy($groupByPeriod, DB::raw('MONTH(created_at)'))
+                             ->orderBy($orderByPeriod)
+                             ->orderBy(DB::raw('MONTH(created_at)'));
+        } else {
+            $results = $results->groupBy($groupByPeriod)
+                             ->orderBy($orderByPeriod);
+        }
+
+        $results = $results->get();
 
         return [
             'data' => $results,
