@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Order;
-use App\Models\InstallmentPlan;
 use App\Models\Warranty;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +21,6 @@ class DashboardController extends BaseController
             'accepted_orders' => $user->orders()->where('status', 'ACCEPTED')->count(),
             'completed_orders' => $user->orders()->where('status', 'INSTALLED')->count(),
             'total_spent' => $user->orders()->whereNotIn('status', ['RETURNED'])->sum('total_amount'),
-            'active_installments' => $user->installmentPlans()->where('status', 'ACTIVE')->count(),
             'active_warranties' => $user->warranties()->where('status', 'ACTIVE')->count(),
         ];
 
@@ -45,26 +43,6 @@ class DashboardController extends BaseController
         return $this->successResponse($orders);
     }
 
-    public function installmentSummary(): JsonResponse
-    {
-        $installments = Auth::user()->installmentPlans()
-            ->with(['order', 'payments' => function ($query) {
-                $query->where('status', 'PENDING')->orderBy('due_date');
-            }])
-            ->where('status', 'ACTIVE')
-            ->get();
-
-        $summary = [
-            'total_plans' => $installments->count(),
-            'total_remaining' => $installments->sum(function ($plan) {
-                return $plan->payments->sum('amount');
-            }),
-            'next_payment_date' => $installments->flatMap->payments->min('due_date'),
-            'upcoming_payments' => $installments->flatMap->payments->take(3),
-        ];
-
-        return $this->successResponse($summary);
-    }
 
     public function warrantySummary(): JsonResponse
     {

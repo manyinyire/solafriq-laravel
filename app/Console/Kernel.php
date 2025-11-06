@@ -17,11 +17,6 @@ class Kernel extends ConsoleKernel
         // SolaFriq scheduled tasks
         $schedule->command('queue:work --stop-when-empty')->everyMinute();
         
-        // Send installment payment reminders daily at 9 AM
-        $schedule->call(function () {
-            // Logic to send installment payment reminders
-        })->dailyAt('09:00');
-        
         // Check for expired warranties daily at 6 AM
         $schedule->call(function () {
             // Logic to check and notify about expired warranties

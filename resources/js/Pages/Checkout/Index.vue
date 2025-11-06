@@ -429,23 +429,6 @@ const goBack = () => {
                     </div>
                   </label>
 
-                  <label class="relative cursor-pointer">
-                    <input
-                      v-model="form.payment_method"
-                      type="radio"
-                      value="installment"
-                      class="sr-only"
-                    />
-                    <div :class="[
-                      'border-2 rounded-lg p-4 text-center transition-all duration-200',
-                      form.payment_method === 'installment'
-                        ? 'border-orange-500 bg-orange-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                    ]">
-                      <Truck class="w-6 h-6 mx-auto mb-2" />
-                      <span class="font-medium text-sm">Installment Plan</span>
-                    </div>
-                  </label>
 
                   <label class="relative cursor-pointer">
                     <input
@@ -528,18 +511,6 @@ const goBack = () => {
                 </div>
               </div>
 
-              <!-- Installment Plan Info -->
-              <div v-else-if="form.payment_method === 'installment'" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div class="flex items-start space-x-3">
-                  <AlertCircle class="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <h4 class="font-medium text-blue-900 mb-2">Installment Plan Available</h4>
-                    <p class="text-blue-700 text-sm">
-                      Pay in monthly installments starting at $150/month. Our team will contact you after order confirmation to set up your payment plan.
-                    </p>
-                  </div>
-                </div>
-              </div>
 
               <!-- Cash on Delivery Info -->
               <div v-else-if="form.payment_method === 'cash_on_delivery'" class="bg-green-50 border border-green-200 rounded-lg p-4">

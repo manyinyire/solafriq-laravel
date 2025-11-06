@@ -43,7 +43,6 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Dashboard Stats
     Route::get('/dashboard/stats', [App\Http\Controllers\Api\V1\DashboardController::class, 'stats']);
     Route::get('/dashboard/recent-orders', [App\Http\Controllers\Api\V1\DashboardController::class, 'recentOrders']);
-    Route::get('/dashboard/installment-summary', [App\Http\Controllers\Api\V1\DashboardController::class, 'installmentSummary']);
     Route::get('/dashboard/warranty-summary', [App\Http\Controllers\Api\V1\DashboardController::class, 'warrantySummary']);
 
     // Orders
@@ -51,9 +50,6 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::get('/orders/{order}', [App\Http\Controllers\Api\V1\OrderController::class, 'show']);
     Route::put('/orders/{order}', [App\Http\Controllers\Api\V1\OrderController::class, 'update']);
 
-    // Installment Plans
-    Route::apiResource('installment-plans', App\Http\Controllers\Api\V1\InstallmentPlanController::class);
-    Route::post('/installment-plans/{installmentPlan}/payments/{payment}/pay', [App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'processPayment']);
 
     // Warranties
     Route::get('/warranties', [App\Http\Controllers\Api\V1\WarrantyController::class, 'index']);
@@ -91,9 +87,6 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('v1/admin')->group(function
     Route::get('/orders/{order}/invoice-pdf', [App\Http\Controllers\Api\V1\OrderController::class, 'downloadInvoice']);
     Route::get('/installations', [App\Http\Controllers\Api\V1\OrderController::class, 'scheduledInstallations']);
 
-    // Installment Plans
-    Route::get('/installment-plans', [App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'adminIndex']);
-    Route::put('/installment-plans/{installmentPlan}', [App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'update']);
 
     // Warranties
     Route::get('/warranties', [App\Http\Controllers\Api\V1\WarrantyController::class, 'adminIndex']);

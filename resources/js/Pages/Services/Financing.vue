@@ -67,16 +67,16 @@ import { DollarSign, CheckCircle, CreditCard, Calendar, TrendingUp, Shield } fro
               <div class="w-16 h-16 bg-orange-100 rounded-lg flex items-center justify-center mb-6">
                 <Calendar class="h-8 w-8 text-orange-600" />
               </div>
-              <h3 class="text-2xl font-bold text-gray-900 mb-4">Installment Plans</h3>
-              <p class="text-gray-600 mb-6">Spread payments over 6-24 months with flexible terms</p>
+              <h3 class="text-2xl font-bold text-gray-900 mb-4">Flexible Payment Plans</h3>
+              <p class="text-gray-600 mb-6">Custom payment arrangements tailored to your needs</p>
               <ul class="space-y-3">
                 <li class="flex items-start">
                   <CheckCircle class="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span class="text-sm">No credit check required</span>
+                  <span class="text-sm">Custom payment terms</span>
                 </li>
                 <li class="flex items-start">
                   <CheckCircle class="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span class="text-sm">Low monthly payments</span>
+                  <span class="text-sm">Flexible arrangements</span>
                 </li>
                 <li class="flex items-start">
                   <CheckCircle class="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
@@ -84,7 +84,7 @@ import { DollarSign, CheckCircle, CreditCard, Calendar, TrendingUp, Shield } fro
                 </li>
                 <li class="flex items-start">
                   <CheckCircle class="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span class="text-sm">Early payment options</span>
+                  <span class="text-sm">Contact us to discuss options</span>
                 </li>
               </ul>
             </div>

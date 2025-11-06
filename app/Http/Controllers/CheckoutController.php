@@ -46,7 +46,7 @@ class CheckoutController extends Controller
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:20',
             'customer_address' => 'required|string|max:1000',
-            'payment_method' => 'required|in:card,installment,cash_on_delivery',
+            'payment_method' => 'required|in:card,cash_on_delivery',
             'total' => 'required|numeric|min:0',
             'is_gift' => 'boolean',
             'recipient_name' => 'nullable|required_if:is_gift,true|string|max:255',
@@ -190,7 +190,6 @@ class CheckoutController extends Controller
         switch ($paymentMethod) {
             case 'card':
                 return 'PAID';
-            case 'installment':
             case 'cash_on_delivery':
                 return 'PENDING';
             default:

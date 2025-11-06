@@ -27,7 +27,6 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'My Orders', href: '/orders', icon: ShoppingCart },
   { name: 'Invoices', href: '/invoices', icon: FileText },
-  { name: 'Installments', href: '/installments', icon: CreditCard },
   { name: 'Warranties', href: '/warranties', icon: Shield },
   { name: 'Support', href: '/support', icon: Wrench },
   { name: 'Profile', href: '/profile', icon: Settings },

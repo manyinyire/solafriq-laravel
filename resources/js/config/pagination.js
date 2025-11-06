@@ -12,7 +12,6 @@ export const PAGINATION = {
   PRODUCTS: 20,
   USERS: 25,
   WARRANTIES: 15,
-  INSTALLMENTS: 15,
   QUOTES: 15,
   
   // Dashboard limits

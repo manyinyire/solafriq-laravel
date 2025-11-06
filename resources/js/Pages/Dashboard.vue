@@ -153,44 +153,6 @@
           </div>
         </div>
 
-        <!-- Installment Summary -->
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-4 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <CreditCard class="h-5 w-5 text-gray-400 mr-3" />
-                <h3 class="text-lg font-semibold text-gray-900">Payment Plans</h3>
-              </div>
-              <Link href="/installments" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
-                View All
-              </Link>
-            </div>
-          </div>
-          <div class="p-6">
-            <div v-if="dashboardData.installment_summary?.total_plans > 0">
-              <div class="space-y-4">
-                <div class="flex justify-between items-center">
-                  <span class="text-sm text-gray-600">Active Plans:</span>
-                  <span class="font-semibold">{{ dashboardData.installment_summary.total_plans }}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-sm text-gray-600">Total Remaining:</span>
-                  <span class="font-semibold text-orange-600">
-                    {{ formatCurrency(dashboardData.installment_summary.total_remaining || 0) }}
-                  </span>
-                </div>
-                <div v-if="dashboardData.installment_summary.next_payment_date" class="border-t pt-4">
-                  <p class="text-sm text-gray-600 mb-2">Next Payment Due:</p>
-                  <p class="font-semibold">{{ formatDate(dashboardData.installment_summary.next_payment_date) }}</p>
-                </div>
-              </div>
-            </div>
-            <div v-else class="text-center py-8">
-              <CreditCard class="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p class="text-gray-500">No active payment plans</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Quick Actions -->
@@ -277,7 +239,6 @@ import {
   Shield,
   Zap,
   Clock,
-  CreditCard,
   Package,
   Wrench,
   FileText
@@ -288,8 +249,7 @@ const page = usePage()
 const loading = ref(true)
 const dashboardData = ref({
   stats: {},
-  recent_orders: [],
-  installment_summary: {}
+  recent_orders: []
 })
 
 onMounted(async () => {
@@ -300,7 +260,7 @@ const loadDashboardData = async () => {
   loading.value = true
   try {
     // Load all dashboard data in parallel
-    const [statsResponse, ordersResponse, installmentResponse] = await Promise.all([
+    const [statsResponse, ordersResponse] = await Promise.all([
       fetch('/dashboard/stats', {
         headers: {
           'Accept': 'application/json',
@@ -316,28 +276,18 @@ const loadDashboardData = async () => {
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         },
         credentials: 'same-origin'
-      }),
-      fetch('/dashboard/installment-summary', {
-        headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-        },
-        credentials: 'same-origin'
       })
     ])
 
-    const [stats, orders, installments] = await Promise.all([
+    const [stats, orders] = await Promise.all([
       statsResponse.json(),
-      ordersResponse.json(),
-      installmentResponse.json()
+      ordersResponse.json()
     ])
 
     // Handle standardized response format (with data wrapper)
     dashboardData.value = {
       stats: stats.success ? stats.data : stats,
-      recent_orders: orders.success ? orders.data : orders,
-      installment_summary: installments.success ? installments.data : installments
+      recent_orders: orders.success ? orders.data : orders
     }
   } catch (error) {
     console.error('Failed to load dashboard data:', error)

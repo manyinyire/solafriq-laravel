@@ -157,7 +157,7 @@ const testimonials = [
       location: "Accra, Ghana",
       role: "Cruise Ship Engineer",
       content:
-        "The installment plan was a game-changer for my family. Working on cruise ships means irregular income, but SolaFriq made it possible for us to have reliable power at home.",
+        "SolaFriq made it possible for us to have reliable power at home. Working on cruise ships means irregular income, but their flexible payment options worked perfectly for our family.",
       rating: 5,
       initials: "KA",
     },
@@ -363,9 +363,6 @@ const testimonials = [
                         </span>
                       </div>
                     </div>
-                    <p v-if="system?.installment_price" class="text-sm text-gray-600">
-                      or <span class="font-semibold text-orange-600">${{ system.installment_price }}/month</span> for {{ system.installment_months }} months
-                    </p>
                   </div>
 
                   <div class="flex space-x-3 pt-2">

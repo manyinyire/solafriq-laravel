@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\InstallmentPayment;
 use App\Services\OrderProcessingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -107,11 +106,9 @@ class PaymentWebhookController extends Controller
         $reference = $data['reference'];
         $amount = $data['amount'] / 100; // Paystack amount is in kobo
 
-        // Check if this is an order payment or installment payment
+        // Check if this is an order payment
         if (str_contains($reference, 'order_')) {
             return $this->processOrderPayment($reference, $amount, 'paystack', $data);
-        } elseif (str_contains($reference, 'installment_')) {
-            return $this->processInstallmentPayment($reference, $amount, 'paystack', $data);
         }
 
         Log::warning('Unknown payment reference format', ['reference' => $reference]);
@@ -144,11 +141,9 @@ class PaymentWebhookController extends Controller
         $reference = $data['tx_ref'];
         $amount = $data['amount'];
 
-        // Check if this is an order payment or installment payment
+        // Check if this is an order payment
         if (str_contains($reference, 'order_')) {
             return $this->processOrderPayment($reference, $amount, 'flutterwave', $data);
-        } elseif (str_contains($reference, 'installment_')) {
-            return $this->processInstallmentPayment($reference, $amount, 'flutterwave', $data);
         }
 
         Log::warning('Unknown payment reference format', ['reference' => $reference]);
@@ -197,26 +192,6 @@ class PaymentWebhookController extends Controller
         return response()->json(['message' => 'Order payment processed successfully']);
     }
 
-    private function processInstallmentPayment(string $reference, float $amount, string $gateway, array $data): JsonResponse
-    {
-        $paymentId = str_replace('installment_', '', $reference);
-        $payment = InstallmentPayment::find($paymentId);
-
-        if (!$payment) {
-            Log::warning('Installment payment not found', ['reference' => $reference]);
-            return response()->json(['message' => 'Payment not found'], 404);
-        }
-
-        // Process the installment payment
-        $this->orderService->processInstallmentPayment($payment, [
-            'amount' => $amount,
-            'payment_method' => $gateway,
-            'payment_reference' => $reference,
-            'gateway_data' => $data
-        ]);
-
-        return response()->json(['message' => 'Installment payment processed successfully']);
-    }
 
     private function verifyPaystackSignature(Request $request): bool
     {

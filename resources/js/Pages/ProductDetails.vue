@@ -271,10 +271,6 @@ const powerOptions = [
                         ${{ system.original_price.toLocaleString() }}
                       </span>
                     </div>
-                    <p v-if="system.installment_price" class="text-gray-600 mt-1">
-                      or <span class="font-semibold text-orange-600">${{ system.installment_price }}/month</span>
-                      for {{ system.installment_months }} months
-                    </p>
                   </div>
                 </div>
 

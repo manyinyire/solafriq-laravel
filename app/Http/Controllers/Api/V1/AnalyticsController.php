@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
-use App\Models\InstallmentPlan;
 use App\Models\WarrantyClaim;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -255,12 +254,11 @@ class AnalyticsController extends Controller
 
     private function getPaymentSuccessRate(): float
     {
-        $totalPayments = DB::table('installment_payments')->count();
-        $successfulPayments = DB::table('installment_payments')
-            ->where('status', 'PAID')
-            ->count();
+        // Calculate payment success rate based on orders
+        $totalOrders = Order::whereNotNull('payment_status')->count();
+        $paidOrders = Order::where('payment_status', 'PAID')->count();
 
-        return $totalPayments > 0 ? ($successfulPayments / $totalPayments) * 100 : 0;
+        return $totalOrders > 0 ? ($paidOrders / $totalOrders) * 100 : 0;
     }
 
     private function getWarrantyClaimMetrics(): array

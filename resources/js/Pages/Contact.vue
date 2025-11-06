@@ -273,7 +273,7 @@ const contactInfo = computed(() => [
 
           <div class="bg-white rounded-2xl p-6 shadow-lg">
             <h3 class="text-lg font-semibold text-gray-900 mb-3">Do you offer financing options?</h3>
-            <p class="text-gray-600">Yes! We offer flexible payment plans including installment options starting from as low as $150/month.</p>
+            <p class="text-gray-600">Yes! We offer flexible payment plans and financing options. Contact us to discuss payment arrangements that work for you.</p>
           </div>
 
           <div class="bg-white rounded-2xl p-6 shadow-lg">

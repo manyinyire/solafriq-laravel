@@ -78,13 +78,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Order::class);
     }
 
-    /**
-     * Get the installment plans for the user.
-     */
-    public function installmentPlans(): HasMany
-    {
-        return $this->hasMany(InstallmentPlan::class);
-    }
 
     /**
      * Get the warranties for the user.

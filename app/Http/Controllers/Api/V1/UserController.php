@@ -39,7 +39,7 @@ class UserController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $users = $query->withCount(['orders', 'installmentPlans', 'warranties'])
+        $users = $query->withCount(['orders', 'warranties'])
                       ->latest()
                       ->paginate(20);
 
@@ -48,7 +48,7 @@ class UserController extends Controller
 
     public function show(User $user): JsonResponse
     {
-        $user->loadCount(['orders', 'installmentPlans', 'warranties', 'warrantyClaims']);
+        $user->loadCount(['orders', 'warranties', 'warrantyClaims']);
         $user->load(['orders' => function ($query) {
             $query->latest()->take(5);
         }]);
@@ -86,16 +86,10 @@ class UserController extends Controller
             ], 403);
         }
 
-        // Check if user has active orders or installment plans
+        // Check if user has active orders
         if ($user->orders()->whereNotIn('status', ['CANCELLED', 'DELIVERED'])->exists()) {
             return response()->json([
                 'message' => 'Cannot delete user with active orders'
-            ], 422);
-        }
-
-        if ($user->installmentPlans()->where('status', 'ACTIVE')->exists()) {
-            return response()->json([
-                'message' => 'Cannot delete user with active installment plans'
             ], 422);
         }
 
@@ -162,8 +156,7 @@ class UserController extends Controller
                     $user->update(['status' => 'ACTIVE']);
                     break;
                 case 'delete':
-                    if (!$user->orders()->whereNotIn('status', ['CANCELLED', 'DELIVERED'])->exists() &&
-                        !$user->installmentPlans()->where('status', 'ACTIVE')->exists()) {
+                    if (!$user->orders()->whereNotIn('status', ['CANCELLED', 'DELIVERED'])->exists()) {
                         $user->delete();
                     }
                     break;

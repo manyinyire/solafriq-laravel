@@ -193,7 +193,6 @@ Route::middleware([
     // Client Dashboard APIs
     Route::get('/dashboard/stats', [\App\Http\Controllers\Api\V1\DashboardController::class, 'stats']);
     Route::get('/dashboard/recent-orders', [\App\Http\Controllers\Api\V1\DashboardController::class, 'recentOrders']);
-    Route::get('/dashboard/installment-summary', [\App\Http\Controllers\Api\V1\DashboardController::class, 'installmentSummary']);
     Route::get('/dashboard/warranty-summary', [\App\Http\Controllers\Api\V1\DashboardController::class, 'warrantySummary']);
 
     // Client Pages
@@ -213,9 +212,6 @@ Route::middleware([
         return Inertia::render('Client/InvoiceDetails', ['invoiceId' => $invoice]);
     })->name('client.invoices.show');
 
-    Route::get('/installments', function () {
-        return Inertia::render('Client/Installments');
-    })->name('client.installments');
 
     Route::get('/warranties', function () {
         return Inertia::render('Client/Warranties');
@@ -242,9 +238,6 @@ Route::middleware([
 
     Route::get('/profile/verify-email-change/{token}', [App\Http\Controllers\ProfileController::class, 'verifyEmailChange'])->name('profile.verifyEmailChange')->middleware('signed');
 
-    // Installment Plans
-    Route::apiResource('installment-plans', \App\Http\Controllers\Api\V1\InstallmentPlanController::class);
-    Route::post('installment-plans/{installmentPlan}/payments/{payment}/pay', [\App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'processPayment']);
 
     // Warranty API routes (specific warranty actions)
     Route::get('warranties/{warranty}', [\App\Http\Controllers\Api\V1\WarrantyController::class, 'show']);
@@ -266,8 +259,6 @@ Route::middleware([
         Route::get('/dashboard/overview', [\App\Http\Controllers\Api\V1\DashboardController::class, 'adminOverview']);
         Route::get('/dashboard/sales-analytics', [\App\Http\Controllers\Api\V1\DashboardController::class, 'salesAnalytics']);
         Route::get('/dashboard/system-metrics', [\App\Http\Controllers\Api\V1\DashboardController::class, 'systemMetrics']);
-        Route::get('/installment-plans', [\App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'adminIndex']);
-        Route::put('/installment-plans/{installmentPlan}', [\App\Http\Controllers\Api\V1\InstallmentPlanController::class, 'update']);
 
         // Company Settings Page
         Route::get('/settings', function () {

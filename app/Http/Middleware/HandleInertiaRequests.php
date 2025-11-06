@@ -95,7 +95,6 @@ class HandleInertiaRequests extends Middleware
             'solarSystems' => $solarSystems,
             'productCategories' => $productCategories,
             'features' => [
-                'installment_plans' => env('ENABLE_INSTALLMENT_PLANS', true),
                 'warranty_claims' => env('ENABLE_WARRANTY_CLAIMS', true),
                 'custom_builder' => env('ENABLE_CUSTOM_BUILDER', true),
             ],

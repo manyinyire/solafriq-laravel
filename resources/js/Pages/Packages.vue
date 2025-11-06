@@ -186,10 +186,6 @@ const filteredSystems = computed(() => {
                       </span>
                     </div>
                   </div>
-                  <p v-if="system?.installment_price" class="text-sm text-gray-600">
-                    or <span class="font-semibold text-orange-600">${{ system.installment_price }}/month</span> 
-                    for {{ system.installment_months }} months
-                  </p>
                 </div>
 
                 <div class="flex space-x-3 pt-2">

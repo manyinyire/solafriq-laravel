@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\User;
-use App\Models\InstallmentPlan;
 use App\Models\Warranty;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -313,38 +312,6 @@ class EmailNotificationService
         }
     }
 
-    /**
-     * Send installment payment reminder
-     */
-    public function sendInstallmentPaymentReminder(InstallmentPlan $plan, $payment): bool
-    {
-        try {
-            $data = [
-                'customer_name' => $plan->user?->name ?? 'Customer',
-                'plan' => $plan,
-                'payment' => $payment,
-                'due_date' => $payment->due_date,
-                'amount_due' => $payment->amount,
-                'system_name' => $plan->solarSystem?->name ?? 'Solar System',
-            ];
-
-            // Mail::to($plan->user->email)->send(new InstallmentReminderMail($data));
-
-            Log::info('Installment payment reminder sent', [
-                'plan_id' => $plan->id,
-                'payment_id' => $payment->id
-            ]);
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error('Failed to send installment reminder', [
-                'plan_id' => $plan->id,
-                'error' => $e->getMessage()
-            ]);
-
-            return false;
-        }
-    }
 
     /**
      * Send warranty expiration notice

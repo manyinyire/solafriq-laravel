@@ -447,7 +447,6 @@ const getStatusColor = (status) => {
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-500">
                   <div>{{ user.orders_count || 0 }} orders</div>
-                  <div>{{ user.installment_plans_count || 0 }} plans</div>
                   <div>{{ user.warranties_count || 0 }} warranties</div>
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-500">
@@ -600,10 +599,6 @@ const getStatusColor = (status) => {
               <div class="text-center">
                 <div class="text-2xl font-bold text-gray-900">{{ selectedUser.orders_count || 0 }}</div>
                 <div class="text-sm text-gray-500">Orders</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-gray-900">{{ selectedUser.installment_plans_count || 0 }}</div>
-                <div class="text-sm text-gray-500">Installment Plans</div>
               </div>
               <div class="text-center">
                 <div class="text-2xl font-bold text-gray-900">{{ selectedUser.warranties_count || 0 }}</div>

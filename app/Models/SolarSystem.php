@@ -72,13 +72,6 @@ class SolarSystem extends Model
         return $this->hasMany(SolarSystemSpecification::class)->orderBy('sort_order');
     }
 
-    /**
-     * Get the installment plans for the solar system.
-     */
-    public function installmentPlans(): HasMany
-    {
-        return $this->hasMany(InstallmentPlan::class);
-    }
 
     /**
      * Scope a query to only include active systems.

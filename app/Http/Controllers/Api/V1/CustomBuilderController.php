@@ -152,8 +152,7 @@ class CustomBuilderController extends BaseController
             'customer_info.phone' => 'required|string',
             'customer_info.address' => 'required|string',
             'installation_preferences' => 'nullable|array',
-            'payment_option' => 'required|in:FULL,INSTALLMENT',
-            'installment_months' => 'required_if:payment_option,INSTALLMENT|nullable|integer|min:3|max:60',
+            'payment_option' => 'required|in:FULL',
         ]);
 
         $calculation = Cache::get($validated['cache_key']);
