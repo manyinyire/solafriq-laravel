@@ -14,7 +14,6 @@ const solutions = [
   { name: "Solar Packages", href: "/packages" },
   { name: "Custom Builder", href: "/builder" },
   { name: "Installation", href: "/installation" },
-  { name: "Monitoring", href: "/monitoring" },
   { name: "Maintenance", href: "/maintenance" },
   { name: "Support", href: "/support" },
 ];

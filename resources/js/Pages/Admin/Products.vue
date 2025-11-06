@@ -41,17 +41,19 @@ const viewMode = ref('grid') // 'grid' or 'list'
 
 const categories = [
   { value: 'all', label: 'All Categories', icon: Package },
-  { value: 'panel', label: 'Solar Panels', icon: Zap },
-  { value: 'inverter', label: 'Inverters', icon: Zap },
-  { value: 'battery', label: 'Batteries', icon: Battery },
-  { value: 'mounting', label: 'Mounting', icon: Box },
-  { value: 'accessory', label: 'Accessories', icon: Wrench },
+  { value: 'SOLAR_PANEL', label: 'Solar Panels', icon: Zap },
+  { value: 'INVERTER', label: 'Inverters', icon: Zap },
+  { value: 'BATTERY', label: 'Batteries', icon: Battery },
+  { value: 'CHARGE_CONTROLLER', label: 'Charge Controllers', icon: Zap },
+  { value: 'MOUNTING', label: 'Mounting', icon: Box },
+  { value: 'CABLES', label: 'Cables', icon: Wrench },
+  { value: 'ACCESSORIES', label: 'Accessories', icon: Wrench },
 ]
 
 const formData = reactive({
   name: '',
   description: '',
-  category: 'panel',
+  category: 'SOLAR_PANEL',
   brand: '',
   model: '',
   price: 0,
@@ -104,11 +106,13 @@ const getCategoryLabel = (category) => {
 
 const getCategoryColor = (category) => {
   const colors = {
-    panel: 'bg-blue-100 text-blue-800',
-    inverter: 'bg-purple-100 text-purple-800',
-    battery: 'bg-green-100 text-green-800',
-    mounting: 'bg-yellow-100 text-yellow-800',
-    accessory: 'bg-gray-100 text-gray-800',
+    SOLAR_PANEL: 'bg-blue-100 text-blue-800',
+    INVERTER: 'bg-purple-100 text-purple-800',
+    BATTERY: 'bg-green-100 text-green-800',
+    CHARGE_CONTROLLER: 'bg-indigo-100 text-indigo-800',
+    MOUNTING: 'bg-yellow-100 text-yellow-800',
+    CABLES: 'bg-orange-100 text-orange-800',
+    ACCESSORIES: 'bg-gray-100 text-gray-800',
   }
   return colors[category] || 'bg-gray-100 text-gray-800'
 }
@@ -180,7 +184,7 @@ const closeModal = () => {
 const resetForm = () => {
   formData.name = ''
   formData.description = ''
-  formData.category = 'panel'
+  formData.category = 'SOLAR_PANEL'
   formData.brand = ''
   formData.model = ''
   formData.price = 0
@@ -521,11 +525,13 @@ const exportToCSV = () => {
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
               <select v-model="formData.category" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                <option value="panel">Solar Panel</option>
-                <option value="inverter">Inverter</option>
-                <option value="battery">Battery</option>
-                <option value="mounting">Mounting</option>
-                <option value="accessory">Accessory</option>
+                <option value="SOLAR_PANEL">Solar Panel</option>
+                <option value="INVERTER">Inverter</option>
+                <option value="BATTERY">Battery</option>
+                <option value="CHARGE_CONTROLLER">Charge Controller</option>
+                <option value="MOUNTING">Mounting</option>
+                <option value="CABLES">Cables</option>
+                <option value="ACCESSORIES">Accessories</option>
               </select>
               <p v-if="errors.category" class="text-red-500 text-sm mt-1">{{ errors.category[0] }}</p>
             </div>

@@ -57,7 +57,7 @@ const values = [
 
 const team = [
   {
-    name: 'David Mukamuri',
+    name: 'Dumisani Chifamba',
     role: 'Founder & CEO',
     image: '/placeholder.svg?height=300&width=300&query=african business leader',
     bio: 'Former cruise ship engineer with 15+ years experience in renewable energy systems. Passionate about bringing sustainable energy solutions to Africa.',

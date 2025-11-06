@@ -74,9 +74,9 @@ const getProductGradient = (index) => {
             <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
               <Package class="h-8 w-8" />
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 capitalize">{{ category }} Products</h1>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 capitalize">{{ category === 'all' ? 'All' : category }} Products</h1>
             <p class="text-xl max-w-2xl mx-auto">
-              Browse our selection of high-quality {{ category }} products
+              Browse our selection of high-quality {{ category === 'all' ? '' : category }} products
             </p>
           </div>
         </div>
@@ -89,12 +89,12 @@ const getProductGradient = (index) => {
           <div class="text-center mb-12">
             <div class="inline-block bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-6 py-2 text-sm font-medium rounded-full mb-6">
               <Award class="w-4 h-4 mr-2 inline-block" />
-              Premium {{ category }} Products
+              Premium {{ category === 'all' ? '' : category }} Products
             </div>
             <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
               Browse Our
               <span class="block bg-gradient-to-r from-orange-500 via-yellow-500 to-green-500 bg-clip-text text-transparent capitalize">
-                {{ category }} Collection
+                {{ category === 'all' ? 'Complete' : category }} Collection
               </span>
             </h2>
           </div>

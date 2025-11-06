@@ -115,14 +115,14 @@ const navItems = computed(() => {
   const solutionsItems = [
     { title: "Solar Packages", href: "/packages", description: "Pre-configured solar solutions" },
     { title: "Custom Builder", href: "/custom-builder", description: "Build your perfect solar system" },
-    { title: "Installation", href: "/services/installation", description: "Professional installation services" },
-    { title: "Monitoring", href: "/monitoring", description: "Real-time system monitoring" },
-    { title: "Maintenance", href: "/services/maintenance", description: "Ongoing support and maintenance" },
   ];
 
   // Build Products menu with dynamic categories
   const productsItems = productCategories.value.length > 0 
-    ? productCategories.value 
+    ? [
+        { title: "All Products", href: "/products", description: "Browse all products" },
+        ...productCategories.value
+      ]
     : [
         { title: "All Products", href: "/products", description: "Browse all products" },
       ];
@@ -299,35 +299,68 @@ const navItems = computed(() => {
         
         <!-- Navigation Links -->
         <nav class="mt-8">
-          <ul class="space-y-4">
+          <ul class="space-y-2">
             <li>
               <Link href="/" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
                 Home
               </Link>
             </li>
+            
+            <!-- Solutions Menu -->
             <li>
-              <Link href="/about" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+              <div class="px-3 py-2 text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                Solutions
+              </div>
+            </li>
+            <li v-for="item in navItems.find(n => n.title === 'Solutions')?.items || []" :key="item.title">
+              <Link :href="item.href" @click="closeMobileMenu" class="block px-6 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                {{ item.title }}
+              </Link>
+            </li>
+            
+            <!-- Products Menu -->
+            <li>
+              <div class="px-3 py-2 text-sm font-semibold text-gray-500 uppercase tracking-wider mt-4">
+                Products
+              </div>
+            </li>
+            <li v-for="item in navItems.find(n => n.title === 'Products')?.items || []" :key="item.title">
+              <Link :href="item.href" @click="closeMobileMenu" class="block px-6 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                {{ item.title }}
+              </Link>
+            </li>
+            
+            <!-- Services Menu -->
+            <li>
+              <div class="px-3 py-2 text-sm font-semibold text-gray-500 uppercase tracking-wider mt-4">
+                Services
+              </div>
+            </li>
+            <li v-for="item in navItems.find(n => n.title === 'Services')?.items || []" :key="item.title">
+              <Link :href="item.href" @click="closeMobileMenu" class="block px-6 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                {{ item.title }}
+              </Link>
+            </li>
+            
+            <!-- Other Links -->
+            <li>
+              <div class="px-3 py-2 text-sm font-semibold text-gray-500 uppercase tracking-wider mt-4">
+                Company
+              </div>
+            </li>
+            <li>
+              <Link href="/about" @click="closeMobileMenu" class="block px-6 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
                 About
               </Link>
             </li>
             <li>
-              <Link href="/products" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-                Products
-              </Link>
-            </li>
-            <li>
-              <Link href="/custom-builder" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-                Custom Builder
-              </Link>
-            </li>
-            <li>
-              <Link href="/quotes" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-                Get Quote
-              </Link>
-            </li>
-            <li>
-              <Link href="/contact" @click="closeMobileMenu" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+              <Link href="/contact" @click="closeMobileMenu" class="block px-6 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
                 Contact
+              </Link>
+            </li>
+            <li v-if="$page.props.auth?.user && !$page.props.auth.user.is_admin">
+              <Link href="/client/quotes" @click="closeMobileMenu" class="block px-6 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                My Quotes
               </Link>
             </li>
           </ul>

@@ -80,6 +80,18 @@ Route::get('/services/financing', function () {
     return Inertia::render('Services/Financing');
 })->name('services.financing');
 
+// Packages Route
+Route::get('/packages', function () {
+    $solarSystems = App\Models\SolarSystem::active()
+        ->orderBy('sort_order')
+        ->orderBy('name')
+        ->get();
+
+    return Inertia::render('Packages', [
+        'solarSystems' => $solarSystems,
+    ]);
+})->name('packages');
+
 // Solar System Routes
 Route::get('/systems', [App\Http\Controllers\SolarSystemController::class, 'index'])->name('systems.index');
 Route::get('/systems/{id}', [App\Http\Controllers\SolarSystemController::class, 'show'])->name('systems.show');
@@ -144,6 +156,19 @@ Route::post('custom-builder/validate', [App\Http\Controllers\Api\V1\CustomBuilde
 Route::post('custom-builder/add-to-cart', [App\Http\Controllers\Api\V1\CustomBuilderController::class, 'addToCart']);
 
 // Public Products Routes
+Route::get('products', function () {
+    // Get all active products
+    $products = App\Models\Product::active()
+        ->orderBy('sort_order')
+        ->orderBy('name')
+        ->get();
+    
+    return Inertia::render('Products/Category', [
+        'category' => 'all',
+        'products' => $products,
+    ]);
+})->name('products.index');
+
 Route::get('products/category/{category}', function ($category) {
     $products = App\Models\Product::active()
         ->where('category', $category)

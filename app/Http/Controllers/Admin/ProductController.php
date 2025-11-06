@@ -52,7 +52,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'required|in:panel,inverter,battery,mounting,accessory',
+            'category' => 'required|in:SOLAR_PANEL,INVERTER,BATTERY,CHARGE_CONTROLLER,MOUNTING,CABLES,ACCESSORIES',
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
@@ -81,7 +81,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'required|in:panel,inverter,battery,mounting,accessory',
+            'category' => 'required|in:SOLAR_PANEL,INVERTER,BATTERY,CHARGE_CONTROLLER,MOUNTING,CABLES,ACCESSORIES',
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
