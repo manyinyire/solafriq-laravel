@@ -229,7 +229,7 @@ class OrderProcessingService
     {
         // Generate tracking number for accepted orders
         $order->update([
-            'tracking_number' => $this->generateTrackingNumber($order)
+            'tracking_number' => generateTrackingNumber($order->id)
         ]);
 
         // Generate or regenerate invoice
@@ -309,14 +309,6 @@ class OrderProcessingService
             'currency' => 'USD',
             'payment_method' => $paymentData['payment_method'],
         ];
-    }
-
-    /**
-     * Generate tracking number
-     */
-    private function generateTrackingNumber(Order $order): string
-    {
-        return 'SF' . date('Ymd') . str_pad($order->id, 6, '0', STR_PAD_LEFT);
     }
 
     /**

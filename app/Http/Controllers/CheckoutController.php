@@ -78,7 +78,7 @@ class CheckoutController extends Controller
                 'status' => 'PENDING',
                 'payment_status' => $this->getPaymentStatus($request->payment_method),
                 'payment_method' => strtoupper($request->payment_method),
-                'tracking_number' => $this->generateTrackingNumber(),
+                'tracking_number' => generateTrackingNumber(),
                 'is_gift' => $request->is_gift,
                 'recipient_name' => $request->recipient_name,
                 'recipient_email' => $request->recipient_email,
@@ -183,15 +183,6 @@ class CheckoutController extends Controller
         }
 
         return Cart::where('session_id', $sessionId)->with('items')->first();
-    }
-
-    private function generateTrackingNumber(): string
-    {
-        do {
-            $trackingNumber = 'SF' . date('Y') . str_pad(random_int(1, 99999), 5, '0', STR_PAD_LEFT);
-        } while (Order::where('tracking_number', $trackingNumber)->exists());
-        
-        return $trackingNumber;
     }
 
     private function getPaymentStatus(string $paymentMethod): string
