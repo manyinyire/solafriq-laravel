@@ -78,7 +78,7 @@ class CheckoutController extends Controller
                 'status' => 'PENDING',
                 'payment_status' => $this->getPaymentStatus($request->payment_method),
                 'payment_method' => strtoupper($request->payment_method),
-                'tracking_number' => $this->generateTrackingNumber(),
+                'tracking_number' => generateTrackingNumber(),
                 'is_gift' => $request->is_gift,
                 'recipient_name' => $request->recipient_name,
                 'recipient_email' => $request->recipient_email,
@@ -95,15 +95,15 @@ class CheckoutController extends Controller
                 $itemType = $cartItem->item_type ?? 'unknown';
 
                 if ($cartItem->item_type === 'solar_system' && $cartItem->solarSystem) {
-                    $itemName = $cartItem->solarSystem->name;
-                    $itemDescription = $cartItem->solarSystem->description ?? $cartItem->solarSystem->capacity . 'kW Solar System';
+                    $itemName = $cartItem->solarSystem->name ?? 'Solar System';
+                    $itemDescription = $cartItem->solarSystem->description ?? ($cartItem->solarSystem->capacity ? $cartItem->solarSystem->capacity . 'kW Solar System' : 'Solar System');
                     $itemImageUrl = $cartItem->solarSystem->image_url ?? null;
                 } elseif ($cartItem->item_type === 'product' && $cartItem->product) {
-                    $itemName = $cartItem->product->name;
+                    $itemName = $cartItem->product->name ?? 'Product';
                     $itemDescription = $cartItem->product->description ?? '';
                     $itemImageUrl = $cartItem->product->image_url ?? null;
                 } elseif ($cartItem->item_type === 'custom_component' && $cartItem->product) {
-                    $itemName = $cartItem->product->name;
+                    $itemName = $cartItem->product->name ?? 'Component';
                     if ($cartItem->custom_system_name) {
                         $itemName .= ' (Part of: ' . $cartItem->custom_system_name . ')';
                     }
@@ -183,15 +183,6 @@ class CheckoutController extends Controller
         }
 
         return Cart::where('session_id', $sessionId)->with('items')->first();
-    }
-
-    private function generateTrackingNumber(): string
-    {
-        do {
-            $trackingNumber = 'SF' . date('Y') . str_pad(random_int(1, 99999), 5, '0', STR_PAD_LEFT);
-        } while (Order::where('tracking_number', $trackingNumber)->exists());
-        
-        return $trackingNumber;
     }
 
     private function getPaymentStatus(string $paymentMethod): string

@@ -11,6 +11,9 @@ use App\Jobs\ProcessOrderJob;
 use App\Jobs\SendOrderNotificationJob;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
+use App\Exceptions\OrderAlreadyPaidException;
+use App\Exceptions\OrderNotCancellableException;
+use App\Exceptions\InvalidRefundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -123,7 +126,7 @@ class OrderProcessingService
     public function processPayment(Order $order, array $paymentData): array
     {
         if ($order->isPaid()) {
-            throw new \Exception('Order is already paid');
+            throw new OrderAlreadyPaidException();
         }
 
         return DB::transaction(function () use ($order, $paymentData) {
@@ -161,7 +164,7 @@ class OrderProcessingService
     public function cancelOrder(Order $order, ?string $reason = null): Order
     {
         if (!in_array($order->status, ['PENDING', 'ACCEPTED'])) {
-            throw new \Exception('Order cannot be cancelled in current status');
+            throw new OrderNotCancellableException();
         }
 
         return DB::transaction(function () use ($order, $reason) {
@@ -226,7 +229,7 @@ class OrderProcessingService
     {
         // Generate tracking number for accepted orders
         $order->update([
-            'tracking_number' => $this->generateTrackingNumber($order)
+            'tracking_number' => generateTrackingNumber($order->id)
         ]);
 
         // Generate or regenerate invoice
@@ -306,14 +309,6 @@ class OrderProcessingService
             'currency' => 'USD',
             'payment_method' => $paymentData['payment_method'],
         ];
-    }
-
-    /**
-     * Generate tracking number
-     */
-    private function generateTrackingNumber(Order $order): string
-    {
-        return 'SF' . date('Ymd') . str_pad($order->id, 6, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -460,11 +455,11 @@ class OrderProcessingService
     public function processRefund(Order $order, array $refundData): Order
     {
         if (!$order->isPaid()) {
-            throw new \Exception('Cannot refund an unpaid order');
+            throw new InvalidRefundException('Cannot refund an unpaid order');
         }
 
         if ($order->status === 'RETURNED') {
-            throw new \Exception('Order is already returned/refunded');
+            throw new InvalidRefundException('Order is already returned/refunded');
         }
 
         return DB::transaction(function () use ($order, $refundData) {

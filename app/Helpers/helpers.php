@@ -290,12 +290,25 @@ if (!function_exists('generateOrderNumber')) {
 /**
  * Generate unique tracking number
  *
+ * @param int|null $orderId Optional order ID for better tracking number generation
  * @return string
  */
 if (!function_exists('generateTrackingNumber')) {
-    function generateTrackingNumber(): string
+    function generateTrackingNumber(?int $orderId = null): string
     {
-        return 'TRK-' . strtoupper(uniqid());
+        $prefix = config('solafriq.tracking_prefix', 'SF');
+
+        if ($orderId) {
+            // Format: SF20250106000001 (Prefix + Date + OrderID)
+            return $prefix . date('Ymd') . str_pad($orderId, 6, '0', STR_PAD_LEFT);
+        }
+
+        // Format: SF2025012345 (Prefix + Year + Random) - ensure uniqueness
+        do {
+            $trackingNumber = $prefix . date('Y') . str_pad(random_int(1, 99999), 5, '0', STR_PAD_LEFT);
+        } while (\App\Models\Order::where('tracking_number', $trackingNumber)->exists());
+
+        return $trackingNumber;
     }
 }
 
